@@ -3,225 +3,835 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arsip Tata Ruang Majene</title>
+<title>SIATRA — Sistem Arsip Tata Ruang Majene</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════ RESET & ROOT ══════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#1E1B5E;--navy-dk:#14124A;--navy-md:#2D2A6E;--navy-lt:rgba(45,42,110,.07);
-  --yellow:#F9C800;--yellow-dk:#D4A800;--yellow-lt:#FFFBCC;
-  --white:#fff;--g50:#F8F9FC;--g100:#EEF0F6;--g200:#DDE1EE;
-  --g400:#9099B8;--g600:#555E80;--g800:#2C3050;
-  --green:#16A34A;--gbg:#DCFCE7;--red:#DC2626;--rbg:#FEE2E2;
-  --r:8px;--sh:0 2px 14px rgba(30,27,94,.09);--shl:0 10px 40px rgba(30,27,94,.18);
+  /* Primary palette */
+  --ink:#0C0B2E;
+  --navy:#1A1860;
+  --navy-2:#232080;
+  --navy-3:#2D2AA0;
+  --navy-4:#3D3BC4;
+  --blue-lt:#EEF0FF;
+  --blue-mid:#C7CAFF;
+
+  /* Accent gold */
+  --gold:#E8B800;
+  --gold-2:#F5C800;
+  --gold-3:#FDD835;
+  --gold-bg:#FFFBEB;
+  --gold-border:#FDE68A;
+
+  /* Neutrals */
+  --white:#FFFFFF;
+  --slate-50:#F7F8FC;
+  --slate-100:#ECEEF6;
+  --slate-200:#D8DBE8;
+  --slate-300:#B8BDD0;
+  --slate-400:#8B91A8;
+  --slate-500:#636980;
+  --slate-600:#464B62;
+  --slate-700:#2D3148;
+  --slate-800:#1C1F35;
+
+  /* Semantic */
+  --success:#059669;
+  --success-bg:#ECFDF5;
+  --success-border:#A7F3D0;
+  --danger:#DC2626;
+  --danger-bg:#FEF2F2;
+  --danger-border:#FECACA;
+  --warn-bg:#FFFBEB;
+  --warn:#D97706;
+  --warn-border:#FDE68A;
+
+  /* Shadows */
+  --sh-xs:0 1px 3px rgba(12,11,46,.08);
+  --sh-sm:0 2px 8px rgba(12,11,46,.10);
+  --sh-md:0 4px 16px rgba(12,11,46,.12);
+  --sh-lg:0 8px 32px rgba(12,11,46,.14);
+  --sh-xl:0 20px 60px rgba(12,11,46,.20);
+
+  --radius-sm:6px;
+  --radius:10px;
+  --radius-lg:16px;
+  --radius-xl:20px;
 }
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--g50);color:var(--g800);min-height:100vh}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:'Source Sans 3',sans-serif;
+  background:var(--slate-50);
+  color:var(--slate-700);
+  min-height:100vh;
+  font-size:14px;
+  line-height:1.5;
+}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font-family:inherit}
 .hidden{display:none!important}
 
-/* ── SETUP OVERLAY ── */
-.full-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy-dk) 0%,#0D0B3A 100%);display:flex;align-items:center;justify-content:center;z-index:5000;padding:16px;overflow-y:auto}
-.full-overlay::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(249,200,0,.025) 60px,rgba(249,200,0,.025) 120px)}
-.setup-card{background:var(--white);border-radius:20px;width:100%;max-width:700px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4);animation:popIn .35s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:1}
-@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-.setup-head{background:linear-gradient(135deg,var(--navy-dk),var(--navy-md));padding:20px 24px;display:flex;align-items:center;gap:14px}
-.setup-head-text h1{font-size:19px;font-weight:800;color:var(--yellow);line-height:1}
-.setup-head-text p{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px}
-.setup-body{padding:22px 24px;max-height:82vh;overflow-y:auto}
+/* ══════════════════════ SETUP OVERLAY ════════════════════════════════════ */
+.full-overlay{
+  position:fixed;inset:0;z-index:9000;
+  background:linear-gradient(145deg,var(--ink) 0%,#0A093A 50%,#160E4A 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;overflow-y:auto;
+}
+.full-overlay::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(61,59,196,.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(232,184,0,.15) 0%, transparent 50%);
+  pointer-events:none;
+}
+.full-overlay::after{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.06)'/%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.setup-card{
+  background:var(--white);border-radius:var(--radius-xl);
+  width:100%;max-width:680px;overflow:hidden;
+  box-shadow:var(--sh-xl);
+  animation:popIn .4s cubic-bezier(.34,1.4,.64,1);
+  position:relative;z-index:1;
+}
+@keyframes popIn{from{transform:scale(.88) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+.setup-head{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  padding:24px 28px;
+  display:flex;align-items:center;gap:16px;
+  position:relative;overflow:hidden;
+}
+.setup-head::after{
+  content:'';position:absolute;right:-30px;top:-30px;
+  width:140px;height:140px;border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.setup-head-text h1{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--gold-2);line-height:1}
+.setup-head-text p{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+
+.setup-body{padding:24px 28px;max-height:80vh;overflow-y:auto}
+.setup-intro{
+  background:var(--blue-lt);border:1px solid var(--blue-mid);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:22px;
+  font-size:13px;color:var(--navy-2);line-height:1.65;
+}
 .setup-steps{display:flex;flex-direction:column;gap:0}
 .stp{display:flex;gap:0;position:relative}
-.stp:not(:last-child)::before{content:'';position:absolute;left:18px;top:38px;bottom:0;width:2px;background:var(--g200)}
-.stp-num{width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;z-index:1}
-.stp-content{flex:1;padding:0 0 20px 14px}
-.stp-title{font-size:14px;font-weight:700;color:var(--g800);margin-bottom:5px}
-.stp-desc{font-size:12.5px;color:var(--g600);line-height:1.75}
-.stp-desc a{color:var(--navy-md);font-weight:700;text-decoration:underline;text-underline-offset:2px}
-.code-block{background:#0F0D2E;border-radius:10px;margin-top:10px;border:1px solid rgba(255,255,255,.08)}
-.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
-.code-lang{font-size:11px;color:rgba(165,180,252,.7);font-family:'IBM Plex Mono',monospace}
-.copy-btn{background:var(--yellow);color:var(--navy-dk);border:none;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
-.copy-btn:hover{background:var(--yellow-dk)}
-.copy-btn.copied{background:var(--green);color:#fff}
-.code-scroll{max-height:200px;overflow-y:auto;padding:12px 16px}
-.code-scroll pre{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#A5B4FC;line-height:1.6;white-space:pre-wrap;word-break:break-all}
-.deploy-box{background:var(--g50);border-radius:8px;padding:12px 14px;margin-top:8px;font-size:12.5px;color:var(--g600);border:1px solid var(--g200);line-height:2}
-.deploy-box strong{color:var(--g800)}
-.pill{display:inline-flex;align-items:center;background:var(--navy-lt);color:var(--navy);font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;margin:0 2px}
-.url-row{display:flex;gap:8px;margin-top:10px}
-.url-row input{flex:1;padding:10px 14px;border:2px solid var(--g200);border-radius:var(--r);font-size:13px;outline:none;transition:border .2s;color:var(--g800)}
-.url-row input:focus{border-color:var(--navy-md);box-shadow:0 0 0 3px rgba(45,42,110,.1)}
-.url-row input::placeholder{color:var(--g400);font-size:12px}
-.btn-connect{padding:10px 20px;background:var(--yellow);color:var(--navy-dk);border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s}
-.btn-connect:hover{background:var(--yellow-dk)}
-.hint{font-size:11px;color:var(--g400);margin-top:6px}
+.stp:not(:last-child)::after{
+  content:'';position:absolute;left:18px;top:40px;bottom:0;
+  width:2px;background:linear-gradient(var(--slate-200),transparent);
+}
+.stp-num{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  color:var(--gold-2);font-size:13px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:2px;z-index:1;
+  box-shadow:0 3px 10px rgba(26,24,96,.3);
+}
+.stp-content{flex:1;padding:0 0 22px 16px}
+.stp-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--slate-800);margin-bottom:5px}
+.stp-desc{font-size:12.5px;color:var(--slate-500);line-height:1.75}
+.stp-desc a{color:var(--navy-3);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.stp-desc a:hover{color:var(--navy-4)}
 
-/* ── HEADER ── */
-.header{background:linear-gradient(135deg,var(--navy-dk) 0%,var(--navy-md) 100%);box-shadow:0 4px 24px rgba(30,27,94,.3);position:sticky;top:0;z-index:100;overflow:hidden}
-.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(249,200,0,.03) 40px,rgba(249,200,0,.03) 80px);pointer-events:none}
-.header-inner{max-width:1440px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;gap:12px}
-.header-left{display:flex;align-items:center;gap:14px;flex:1}
-.logo-group{display:flex;align-items:center;gap:10px}
-.logo-divider{width:1px;height:52px;background:rgba(249,200,0,.25);margin:0 4px}
-.header-text{flex:1}
-.h-sup{font-size:9px;color:rgba(249,200,0,.7);font-weight:600;letter-spacing:.07em;text-transform:uppercase}
-.h-title{font-size:18px;font-weight:800;color:var(--yellow);letter-spacing:.04em;line-height:1;margin:2px 0}
-.h-sub{font-size:10.5px;color:rgba(255,255,255,.55);font-weight:500}
-.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.sync-pill{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;user-select:none}
-.sp-ok{background:rgba(22,163,74,.2);color:#4ADE80}
-.sp-err{background:rgba(220,38,38,.2);color:#FCA5A5}
-.sp-load{background:rgba(249,200,0,.15);color:var(--yellow)}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
-.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+.code-block{
+  background:#0D0B2A;border-radius:var(--radius);margin-top:10px;
+  border:1px solid rgba(255,255,255,.07);overflow:hidden;
+}
+.code-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.2);
+}
+.code-lang{font-size:11px;color:rgba(165,180,252,.65);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px}
+.code-lang::before{content:'';width:8px;height:8px;border-radius:50%;background:#4ADE80;display:inline-block}
+.copy-btn{
+  background:var(--gold-2);color:var(--navy);border:none;
+  padding:5px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;
+}
+.copy-btn:hover{background:var(--gold-3);transform:scale(1.03)}
+.copy-btn.copied{background:#059669;color:#fff}
+.code-scroll{max-height:190px;overflow-y:auto;padding:14px 16px}
+.code-scroll::-webkit-scrollbar{width:4px}
+.code-scroll::-webkit-scrollbar-track{background:transparent}
+.code-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.code-scroll pre{font-family:'JetBrains Mono',monospace;font-size:11px;color:#A5B4FC;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+
+.deploy-box{
+  background:var(--slate-50);border-radius:var(--radius);
+  padding:14px 16px;margin-top:10px;border:1px solid var(--slate-200);
+  display:flex;flex-direction:column;gap:6px;
+}
+.deploy-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--slate-600)}
+.deploy-row strong{color:var(--slate-800)}
+.pill{
+  display:inline-flex;align-items:center;
+  background:var(--blue-lt);color:var(--navy-2);
+  font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;
+  border:1px solid var(--blue-mid);
+}
+.deploy-note{font-size:12px;color:var(--slate-500);padding-top:4px;border-top:1px solid var(--slate-200);margin-top:2px}
+
+.url-row{display:flex;gap:8px;margin-top:12px}
+.url-row input{
+  flex:1;padding:11px 14px;
+  border:2px solid var(--slate-200);border-radius:var(--radius);
+  font-size:13px;color:var(--slate-800);outline:none;transition:all .2s;
+  background:var(--white);
+}
+.url-row input:focus{border-color:var(--navy-3);box-shadow:0 0 0 4px rgba(45,42,160,.1)}
+.url-row input::placeholder{color:var(--slate-400);font-size:12px}
+.btn-connect{
+  padding:11px 22px;background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  color:var(--gold-2);border:none;border-radius:var(--radius);
+  font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+  transition:all .2s;font-family:'Outfit',sans-serif;
+  box-shadow:0 4px 14px rgba(26,24,96,.4);
+}
+.btn-connect:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,24,96,.5)}
+.setup-hint{font-size:11px;color:var(--slate-400);margin-top:8px;display:flex;align-items:center;gap:5px}
+.setup-hint::before{content:'🔒';font-size:12px}
+
+/* ══════════════════════ HEADER ════════════════════════════════════════════ */
+.header{
+  background:linear-gradient(160deg,var(--ink) 0%,var(--navy) 40%,var(--navy-2) 100%);
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 20px rgba(12,11,46,.4);
+  overflow:hidden;
+}
+.header-decor{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(61,59,196,.25) 0%,transparent 55%),
+    radial-gradient(ellipse at 100% 50%,rgba(232,184,0,.1) 0%,transparent 45%);
+}
+.header-decor::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,transparent,transparent 79px,
+    rgba(255,255,255,.018) 79px,rgba(255,255,255,.018) 80px
+  );
+}
+.header-inner{
+  max-width:1500px;margin:0 auto;
+  padding:0 28px;
+  display:flex;align-items:stretch;justify-content:space-between;
+  position:relative;z-index:1;min-height:72px;
+}
+.header-brand{display:flex;align-items:center;gap:0}
+.logo-block{
+  display:flex;align-items:center;justify-content:center;
+  padding:10px 18px 10px 0;
+  gap:10px;
+}
+.logo-sep{
+  width:1px;height:44px;
+  background:linear-gradient(transparent,rgba(249,200,0,.35),transparent);
+  margin:0 4px 0 8px;
+}
+.header-identity{padding:12px 0}
+.h-kementerian{
+  font-size:9px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(249,200,0,.65);
+  line-height:1;margin-bottom:3px;
+}
+.h-system-name{
+  font-family:'Outfit',sans-serif;
+  font-size:17px;font-weight:900;
+  color:var(--gold-2);
+  letter-spacing:.02em;line-height:1;
+  display:flex;align-items:center;gap:8px;
+}
+.h-system-name .siatra-badge{
+  font-size:10px;font-weight:700;
+  background:var(--gold-2);color:var(--navy);
+  padding:2px 7px;border-radius:4px;letter-spacing:.04em;
+}
+.h-location{
+  font-size:11px;color:rgba(255,255,255,.5);
+  font-weight:500;margin-top:3px;
+  display:flex;align-items:center;gap:5px;
+}
+.h-location::before{content:'📍';font-size:10px}
+
+.header-actions{display:flex;align-items:center;gap:10px;padding:0 0 0 20px}
+.sync-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:30px;
+  font-size:11.5px;font-weight:600;cursor:pointer;
+  transition:all .2s;user-select:none;border:1px solid transparent;
+}
+.sc-ok{background:rgba(5,150,105,.15);color:#34D399;border-color:rgba(52,211,153,.2)}
+.sc-ok:hover{background:rgba(5,150,105,.25)}
+.sc-err{background:rgba(220,38,38,.15);color:#F87171;border-color:rgba(248,113,113,.2)}
+.sc-load{background:rgba(232,184,0,.12);color:var(--gold-2);border-color:rgba(232,184,0,.25)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.spinner{
+  width:12px;height:12px;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.15);
+  border-top-color:currentColor;border-radius:50%;
+  animation:spin .6s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
-.recfg-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.65);padding:6px 12px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
-.recfg-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.cfg-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.6);padding:7px 14px;border-radius:30px;
+  font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;
+}
+.cfg-btn:hover{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.25)}
 
-/* ── TABS ── */
-.tab-nav{background:var(--navy);border-bottom:3px solid var(--yellow)}
-.tab-inner{max-width:1440px;margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto}
-.tab-btn{padding:12px 20px;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-3px;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .2s}
-.tab-btn:hover{color:rgba(255,255,255,.85)}
-.tab-active{color:var(--yellow)!important;border-bottom-color:var(--yellow)!important}
+/* ══════════════════════ STATS BAR ════════════════════════════════════════ */
+.stats-bar{
+  background:var(--white);border-bottom:1px solid var(--slate-200);
+  box-shadow:var(--sh-xs);
+}
+.stats-inner{
+  max-width:1500px;margin:0 auto;padding:0 28px;
+  display:flex;align-items:stretch;gap:0;overflow-x:auto;
+}
+.stat-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 24px;border-right:1px solid var(--slate-100);
+  flex-shrink:0;cursor:default;transition:background .2s;
+  min-width:0;
+}
+.stat-item:first-child{padding-left:0}
+.stat-item:last-child{border-right:none}
+.stat-item:hover{background:var(--slate-50)}
+.stat-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.si-fpr{background:linear-gradient(135deg,#EEF2FF,#C7D2FE)}
+.si-suket{background:linear-gradient(135deg,#F0FDF4,#A7F3D0)}
+.si-skkr{background:linear-gradient(135deg,#FFF7ED,#FED7AA)}
+.si-surat{background:linear-gradient(135deg,#FDF4FF,#E9D5FF)}
+.si-total{background:linear-gradient(135deg,var(--navy),var(--navy-3))}
+.stat-info{min-width:0}
+.stat-num{
+  font-family:'Outfit',sans-serif;
+  font-size:22px;font-weight:800;color:var(--slate-800);
+  line-height:1;
+}
+.si-total .stat-num{color:var(--gold-2)}
+.si-total .stat-icon{color:var(--gold-2)}
+.stat-label{font-size:11px;font-weight:600;color:var(--slate-400);margin-top:1px;white-space:nowrap}
 
-/* ── MAIN ── */
-.main{max-width:1440px;margin:0 auto;padding:22px 24px}
-.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+/* ══════════════════════ TABS ══════════════════════════════════════════════ */
+.tab-nav{
+  background:var(--white);
+  border-bottom:1px solid var(--slate-200);
+  position:sticky;top:72px;z-index:100;
+  box-shadow:var(--sh-xs);
+}
+.tab-inner{
+  max-width:1500px;margin:0 auto;padding:0 28px;
+  display:flex;gap:0;overflow-x:auto;
+}
+.tab-inner::-webkit-scrollbar{height:0}
+.tab-btn{
+  padding:14px 20px;background:none;border:none;
+  border-bottom:3px solid transparent;margin-bottom:-1px;
+  cursor:pointer;color:var(--slate-400);font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:8px;white-space:nowrap;
+  transition:all .2s;font-family:'Outfit',sans-serif;letter-spacing:.01em;
+  position:relative;
+}
+.tab-btn:hover{color:var(--navy-2);background:var(--slate-50)}
+.tab-active{color:var(--navy-2)!important;border-bottom-color:var(--navy-3)!important;background:var(--blue-lt)!important}
+.tab-badge{
+  background:var(--slate-100);color:var(--slate-400);
+  font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;
+  transition:all .2s;
+}
+.tab-active .tab-badge{background:var(--navy-3);color:var(--white)}
+
+/* ══════════════════════ MAIN ══════════════════════════════════════════════ */
+.main{max-width:1500px;margin:0 auto;padding:24px 28px}
+
+/* Section header */
+.section-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:18px;gap:16px;flex-wrap:wrap;
+}
+.section-title-block{}
+.section-label{
+  font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--slate-400);margin-bottom:3px;
+}
+.section-title{
+  font-family:'Outfit',sans-serif;
+  font-size:20px;font-weight:800;color:var(--slate-800);line-height:1;
+}
+.section-desc{font-size:12px;color:var(--slate-400);margin-top:3px}
+
+/* Toolbar */
+.toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;flex-wrap:wrap;
+  background:var(--white);
+  border:1px solid var(--slate-200);
+  border-radius:var(--radius-lg);
+  padding:12px 16px;
+  box-shadow:var(--sh-xs);
+}
 .toolbar-l{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.filter-wrap{display:flex;align-items:center;gap:8px}
-.filter-lbl{font-size:12px;font-weight:700;color:var(--g600);white-space:nowrap}
-input.fsel{padding:8px 12px;border:1.5px solid var(--g200);border-radius:var(--r);font-size:13px;color:var(--g800);background:var(--white);outline:none;width:140px;transition:border .2s}
-input.fsel:focus{border-color:var(--navy-md)}
-input.fsel::placeholder{color:var(--g400);font-size:12px}
-.count-tag{background:var(--navy);color:var(--yellow);font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px}
+.filter-wrap{
+  display:flex;align-items:center;gap:0;
+  background:var(--slate-50);border:1.5px solid var(--slate-200);
+  border-radius:var(--radius);overflow:hidden;transition:border .2s;
+}
+.filter-wrap:focus-within{border-color:var(--navy-3);box-shadow:0 0 0 3px rgba(45,42,160,.08)}
+.filter-icon{padding:0 10px;color:var(--slate-400);font-size:14px;display:flex;align-items:center;pointer-events:none}
+input.fsel{
+  padding:8px 12px 8px 0;
+  border:none;background:transparent;
+  font-size:13px;color:var(--slate-700);outline:none;
+  width:160px;
+}
+input.fsel::placeholder{color:var(--slate-400);font-size:12.5px}
+.count-tag{
+  background:var(--blue-lt);color:var(--navy-2);
+  border:1px solid var(--blue-mid);
+  font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;
+  display:flex;align-items:center;gap:5px;
+}
+.count-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--navy-3)}
 .toolbar-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn-add{background:var(--yellow);color:var(--navy-dk);border:none;font-size:13px;font-weight:700;padding:9px 20px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(249,200,0,.35);transition:all .2s}
-.btn-add:hover{background:var(--yellow-dk);transform:translateY(-1px)}
-.btn-export{background:var(--navy);color:var(--yellow);border:none;font-size:13px;font-weight:700;padding:9px 18px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(30,27,94,.2);transition:all .2s}
-.btn-export:hover{background:var(--navy-md);transform:translateY(-1px)}
 
-/* ── TABLE ── */
-.table-card{background:var(--white);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  border:none;border-radius:var(--radius);cursor:pointer;
+  font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;
+  padding:9px 18px;transition:all .2s;white-space:nowrap;
+  letter-spacing:.01em;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  color:var(--gold-2);
+  box-shadow:0 4px 14px rgba(26,24,96,.35);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,24,96,.45)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{
+  background:var(--white);color:var(--navy-2);
+  border:1.5px solid var(--slate-200);
+  box-shadow:var(--sh-xs);
+}
+.btn-secondary:hover{border-color:var(--navy-3);background:var(--blue-lt);color:var(--navy-3)}
+.btn-danger-soft{
+  background:var(--danger-bg);color:var(--danger);
+  border:1px solid var(--danger-border);
+}
+.btn-danger-soft:hover{background:#FEE2E2}
+
+/* ══════════════════════ TABLE CARD ════════════════════════════════════════ */
+.table-card{
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  border:1px solid var(--slate-200);
+  box-shadow:var(--sh-sm);
+  overflow:hidden;
+}
+.table-card-header{
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--slate-100);
+  background:linear-gradient(135deg,var(--slate-50),var(--white));
+}
+.tch-left{display:flex;align-items:center;gap:10px}
+.tch-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.tch-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--slate-800)}
+.tch-count{font-size:11px;color:var(--slate-400);font-weight:500}
+
 .t-scroll{overflow-x:auto}
+.t-scroll::-webkit-scrollbar{height:5px}
+.t-scroll::-webkit-scrollbar-track{background:var(--slate-100)}
+.t-scroll::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:4px}
+.t-scroll::-webkit-scrollbar-thumb:hover{background:var(--slate-400)}
+
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{background:var(--navy);color:var(--yellow);font-weight:700;padding:11px 12px;text-align:left;white-space:nowrap;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
-tbody td{padding:10px 12px;border-bottom:1px solid var(--g100);vertical-align:middle}
+thead{position:sticky;top:0}
+thead th{
+  background:var(--navy);color:rgba(255,255,255,.75);
+  font-family:'Outfit',sans-serif;font-weight:700;
+  padding:11px 14px;text-align:left;white-space:nowrap;
+  font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:2px solid var(--navy-3);
+}
+thead th:first-child{border-radius:0;padding-left:18px}
+thead th.th-gold{color:var(--gold-2)}
+tbody tr{transition:background .12s}
+tbody tr:nth-child(even){background:var(--slate-50)}
+tbody tr:hover{background:var(--blue-lt)!important}
+tbody td{
+  padding:12px 14px;border-bottom:1px solid var(--slate-100);
+  vertical-align:middle;
+}
+tbody td:first-child{padding-left:18px}
 tbody tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--g50)}
-.tno{text-align:center;color:var(--g400);font-weight:700;font-size:12px;width:34px}
-.tbold{font-weight:600;color:var(--navy-md)}
-.tmono{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--g600)}
-.tnsurat{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--navy);font-weight:700;white-space:nowrap}
-.tcenter{text-align:center}
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.bg-green{background:var(--gbg);color:var(--green)}
-.bg-red{background:var(--rbg);color:var(--red)}
-.bg-amber{background:#FEF9C3;color:#92400E}
-.tag-tahun{background:var(--navy);color:var(--yellow);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
-.tag-zona{background:var(--navy-lt);color:var(--navy-md);font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;white-space:nowrap}
-.fchips{display:flex;flex-wrap:wrap;gap:3px;min-width:50px}
-.fchip{display:inline-flex;align-items:center;gap:4px;background:var(--g100);color:var(--g600);font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;transition:background .15s;max-width:120px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-a.fchip:hover{background:var(--g200)}
-.fchip-up{background:#FEF9C3;color:#92400E}
-.nofile{color:var(--g400);font-size:12px}
-.act-btn{background:none;border:none;cursor:pointer;padding:5px 7px;border-radius:6px;font-size:15px;transition:background .15s;line-height:1}
-.act-btn:hover{background:var(--g100)}
 
-/* ── EMPTY ── */
-.empty{padding:60px 20px;text-align:center}
-.empty-ico{font-size:52px;opacity:.35;margin-bottom:14px}
-.empty-title{font-size:16px;font-weight:700;color:var(--g600);margin-bottom:6px}
-.empty-sub{font-size:13px;color:var(--g400)}
+.td-no{
+  text-align:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:600;color:var(--slate-400);
+  width:36px;
+}
+.td-name{font-weight:700;color:var(--slate-800);font-size:13px}
+.td-nik{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;color:var(--slate-500);
+  letter-spacing:.04em;
+}
+.td-nosurat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--navy-2);font-weight:700;
+  white-space:nowrap;background:var(--blue-lt);
+  padding:3px 8px!important;border-radius:5px;display:inline-block;
+}
+.td-center{text-align:center}
 
-/* ── MODAL ── */
-.modal-bg{position:fixed;inset:0;background:rgba(10,8,38,.75);backdrop-filter:blur(5px);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto}
-.modal{background:var(--white);border-radius:16px;width:100%;max-width:750px;margin:auto;box-shadow:var(--shl);animation:slideUp .25s ease}
-@keyframes slideUp{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
-.mhead{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--navy-dk),var(--navy-md));border-radius:16px 16px 0 0;border-bottom:2px solid var(--yellow)}
-.mhead h2{font-size:15px;font-weight:800;color:var(--yellow)}
-.mclose{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s}
-.mclose:hover{background:rgba(255,255,255,.3)}
-.mbody{padding:20px 24px;display:flex;flex-direction:column;gap:13px}
-.mfooter{padding:15px 24px;border-top:1px solid var(--g100);display:flex;justify-content:flex-end;gap:10px}
+/* Badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;
+  font-size:11px;font-weight:700;white-space:nowrap;
+  font-family:'Outfit',sans-serif;
+}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+.bg-green{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.bg-red{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.bg-amber{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)}
+
+/* Tags */
+.tag-tahun{
+  background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  color:var(--gold-2);font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:6px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.04em;
+}
+.tag-zona{
+  background:var(--blue-lt);color:var(--navy-2);
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;
+  white-space:nowrap;border:1px solid var(--blue-mid);
+}
+
+/* File chips */
+.fchips{display:flex;flex-wrap:wrap;gap:4px;min-width:60px}
+.fchip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--slate-100);color:var(--slate-600);
+  font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:5px;
+  transition:all .15s;max-width:110px;overflow:hidden;
+  white-space:nowrap;text-overflow:ellipsis;
+  border:1px solid var(--slate-200);
+}
+a.fchip:hover{background:var(--blue-lt);color:var(--navy-2);border-color:var(--blue-mid)}
+.fchip-up{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.nofile{color:var(--slate-300);font-size:13px}
+
+/* Action buttons */
+.act-wrap{display:flex;gap:4px;align-items:center}
+.act-btn{
+  background:none;border:1px solid transparent;
+  cursor:pointer;padding:5px 8px;border-radius:6px;
+  font-size:14px;transition:all .15s;line-height:1;
+}
+.act-edit:hover{background:var(--blue-lt);border-color:var(--blue-mid)}
+.act-del:hover{background:var(--danger-bg);border-color:var(--danger-border)}
+
+/* ══════════════════════ EMPTY STATE ═══════════════════════════════════════ */
+.empty{
+  padding:64px 20px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.empty-art{
+  width:80px;height:80px;border-radius:20px;
+  background:linear-gradient(135deg,var(--blue-lt),var(--slate-100));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin-bottom:4px;
+}
+.empty-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--slate-700)}
+.empty-sub{font-size:13px;color:var(--slate-400);max-width:280px;line-height:1.6}
+.empty-cta{
+  margin-top:4px;padding:10px 22px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  color:var(--gold-2);border:none;border-radius:var(--radius);
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 14px rgba(26,24,96,.3);
+}
+.empty-cta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,24,96,.4)}
+
+/* ══════════════════════ MODAL ════════════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(12,11,46,.7);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:flex-start;justify-content:center;
+  z-index:1000;padding:24px 20px;overflow-y:auto;
+}
+.modal{
+  background:var(--white);border-radius:var(--radius-xl);
+  width:100%;max-width:760px;margin:auto;
+  box-shadow:var(--sh-xl);
+  animation:slideUp .28s cubic-bezier(.34,1.3,.64,1);
+  border:1px solid var(--slate-200);
+}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.mhead{
+  padding:20px 26px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+  border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  border-bottom:2px solid var(--gold);
+  position:relative;overflow:hidden;
+}
+.mhead::after{
+  content:'';position:absolute;right:-20px;top:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(255,255,255,.03);
+}
+.mhead-left{display:flex;align-items:center;gap:12px;z-index:1}
+.mhead-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.mhead h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--gold-2)}
+.mhead-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
+.mclose{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.7);width:32px;height:32px;border-radius:50%;
+  cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;z-index:1;flex-shrink:0;
+}
+.mclose:hover{background:rgba(255,255,255,.25);color:#fff;transform:scale(1.05)}
+
+.mbody{padding:22px 26px;display:flex;flex-direction:column;gap:16px}
+.mfooter{
+  padding:16px 26px;
+  display:flex;justify-content:flex-end;gap:10px;align-items:center;
+  border-top:1px solid var(--slate-100);
+  background:var(--slate-50);
+  border-radius:0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* Form sections */
+.form-section{
+  background:var(--slate-50);border-radius:var(--radius);
+  border:1px solid var(--slate-100);overflow:hidden;
+}
+.form-section-head{
+  padding:10px 14px;background:var(--white);
+  border-bottom:1px solid var(--slate-100);
+  font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;
+  color:var(--slate-400);text-transform:uppercase;letter-spacing:.1em;
+  display:flex;align-items:center;gap:7px;
+}
+.form-section-body{padding:14px;display:flex;flex-direction:column;gap:13px}
+
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
 .field{display:flex;flex-direction:column;gap:5px}
-.flbl{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.05em}
-.flbl .req{color:var(--red);margin-left:2px}
-input.inp,select.inp{width:100%;padding:9px 12px;border:1.5px solid var(--g200);border-radius:var(--r);font-size:13px;color:var(--g800);background:var(--white);outline:none;transition:border .2s}
-input.inp:focus,select.inp:focus{border-color:var(--navy-md);box-shadow:0 0 0 3px rgba(45,42,110,.1)}
-.radios{display:flex;gap:7px;flex-wrap:wrap}
-.rbtn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--g200);color:var(--g600);background:var(--white);transition:all .15s;user-select:none}
-.rbtn.on{border-color:var(--navy)!important;background:var(--navy)!important;color:var(--yellow)!important}
+.flbl{
+  font-size:11px;font-weight:700;color:var(--slate-500);
+  text-transform:uppercase;letter-spacing:.06em;
+  display:flex;align-items:center;gap:4px;
+}
+.req{color:var(--danger);font-size:13px;line-height:1}
+
+input.inp,select.inp{
+  width:100%;padding:10px 13px;
+  border:1.5px solid var(--slate-200);border-radius:var(--radius);
+  font-size:13px;color:var(--slate-800);background:var(--white);
+  outline:none;transition:all .2s;
+}
+input.inp:focus,select.inp:focus{
+  border-color:var(--navy-3);
+  box-shadow:0 0 0 3px rgba(45,42,160,.1);
+}
+input.inp:hover,select.inp:hover{border-color:var(--slate-300)}
+
+/* Radio buttons */
+.radios{display:flex;gap:8px;flex-wrap:wrap}
+.rbtn{
+  padding:8px 16px;border-radius:var(--radius);font-size:12.5px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--slate-200);color:var(--slate-500);
+  background:var(--white);transition:all .15s;user-select:none;
+  font-family:'Outfit',sans-serif;
+}
+.rbtn:hover{border-color:var(--navy-3);color:var(--navy-2)}
+.rbtn.on{
+  border-color:var(--navy-3)!important;background:linear-gradient(135deg,var(--navy),var(--navy-3))!important;
+  color:var(--gold-2)!important;box-shadow:0 3px 10px rgba(26,24,96,.3);
+}
+
+/* Section divider */
 .sect-div{position:relative;text-align:center;margin:2px 0}
-.sect-div::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--g200)}
-.sect-div span{position:relative;background:var(--white);padding:0 12px;font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em}
+.sect-div::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--slate-200)}
+.sect-div span{
+  position:relative;background:var(--white);padding:0 12px;
+  font-size:10px;font-weight:800;color:var(--slate-400);
+  text-transform:uppercase;letter-spacing:.1em;
+  font-family:'Outfit',sans-serif;
+}
+
+/* File rows */
 .file-row{display:flex;flex-direction:column;gap:5px}
-.file-lbl{display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px dashed var(--g200);border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;color:var(--g600);transition:all .15s;background:var(--g50)}
-.file-lbl:hover{border-color:var(--navy-md);color:var(--navy-md);background:var(--navy-lt)}
+.file-lbl{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border:1.5px dashed var(--slate-200);
+  border-radius:var(--radius);cursor:pointer;
+  font-size:12px;font-weight:600;color:var(--slate-500);
+  transition:all .15s;background:var(--white);
+}
+.file-lbl:hover{border-color:var(--navy-3);color:var(--navy-2);background:var(--blue-lt)}
 .file-lbl input[type=file]{display:none}
-.opt{margin-left:auto;font-size:10px;color:var(--g400);font-weight:500}
-.fstat{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:5px}
-.fstat-ok{background:var(--gbg);color:var(--green)}
-.fstat-pend{background:#FEF9C3;color:#92400E}
-.btn-save{padding:10px 26px;border:none;border-radius:var(--r);background:var(--yellow);font-size:13px;font-weight:700;color:var(--navy-dk);cursor:pointer;box-shadow:0 2px 10px rgba(249,200,0,.35);transition:all .2s;display:inline-flex;align-items:center;gap:8px}
-.btn-save:hover{background:var(--yellow-dk);transform:translateY(-1px)}
+.file-icon-wrap{
+  width:28px;height:28px;border-radius:7px;
+  background:var(--slate-100);display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;transition:background .15s;
+}
+.file-lbl:hover .file-icon-wrap{background:rgba(45,42,160,.12)}
+.file-name-text{flex:1;font-size:12px}
+.opt-badge{
+  background:var(--slate-100);color:var(--slate-400);
+  font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.05em;margin-left:auto;flex-shrink:0;
+}
+.fstat{
+  font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:6px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.fstat-ok{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.fstat-pend{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)}
+
+/* Save/cancel buttons */
+.btn-save{
+  padding:11px 28px;border:none;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  font-size:13px;font-weight:800;color:var(--gold-2);cursor:pointer;
+  box-shadow:0 4px 14px rgba(26,24,96,.4);transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Outfit',sans-serif;letter-spacing:.02em;
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,24,96,.5)}
 .btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-cancel{padding:10px 20px;border:1.5px solid var(--g200);border-radius:var(--r);background:var(--white);font-size:13px;font-weight:600;color:var(--g600);cursor:pointer;transition:all .15s}
-.btn-cancel:hover{border-color:var(--g400)}
+.btn-cancel{
+  padding:11px 22px;border:1.5px solid var(--slate-200);border-radius:var(--radius);
+  background:var(--white);font-size:13px;font-weight:600;color:var(--slate-600);
+  cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;
+}
+.btn-cancel:hover{border-color:var(--slate-400);color:var(--slate-800)}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:var(--shl);animation:slideUp .25s ease;display:flex;align-items:center;gap:8px;max-width:380px;pointer-events:none}
-.ts-ok{background:#16A34A;color:#fff}
-.ts-err{background:var(--red);color:#fff}
-.ts-info{background:var(--navy);color:var(--yellow)}
+/* ══════════════════════ TOAST ════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  padding:13px 18px;border-radius:var(--radius-lg);
+  font-size:13px;font-weight:700;z-index:9999;
+  box-shadow:var(--sh-xl);animation:slideUp .25s ease;
+  display:flex;align-items:center;gap:10px;max-width:380px;
+  pointer-events:none;backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);
+}
+.ts-ok{background:rgba(5,150,105,.95);color:#fff}
+.ts-err{background:rgba(220,38,38,.95);color:#fff}
+.ts-info{background:rgba(26,24,96,.95);color:var(--gold-2)}
+.toast-icon{font-size:16px;flex-shrink:0}
 
-footer{text-align:center;padding:16px;font-size:11px;color:var(--g400);border-top:1px solid var(--g100);margin-top:16px}
+/* ══════════════════════ FOOTER ═══════════════════════════════════════════ */
+footer{
+  max-width:1500px;margin:0 auto;
+  padding:20px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  flex-wrap:wrap;
+  border-top:1px solid var(--slate-200);
+  margin-top:24px;
+}
+.footer-brand{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--slate-400);
+}
+.footer-brand strong{color:var(--slate-600);font-family:'Outfit',sans-serif}
+.footer-meta{font-size:11px;color:var(--slate-400);text-align:right}
+.footer-drive{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--success-bg);color:var(--success);
+  border:1px solid var(--success-border);
+  font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;
+  margin-top:4px;
+}
 
-@media(max-width:768px){
-  .header-inner,.main,.tab-inner{padding-left:14px;padding-right:14px}
+/* ══════════════════════ RESPONSIVE ═══════════════════════════════════════ */
+@media(max-width:900px){
+  .header-inner,.stats-inner,.tab-inner,.main,footer{padding-left:16px;padding-right:16px}
   .grid2,.grid3{grid-template-columns:1fr}
-  .setup-body,.setup-head{padding:16px}
-  .h-title{font-size:15px}
-  .logo-divider{display:none}
-  .toolbar-r{width:100%}
+  .h-system-name{font-size:14px}
+  .stat-item{padding:12px 16px}
+  .setup-body,.setup-head{padding:18px 20px}
+  .toolbar-r{flex:1;justify-content:flex-end}
+  .logo-sep{display:none}
+}
+@media(max-width:600px){
+  .stats-bar{display:none}
+  .h-system-name .siatra-badge{display:none}
+  .section-header{flex-direction:column}
+  footer{flex-direction:column;text-align:center}
+  .footer-meta{text-align:center}
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ SETUP WIZARD ════════════════════ -->
+<!-- ══════════════════════════════ SETUP ═══════════════════════════════════── -->
 <div class="full-overlay" id="setupOverlay">
   <div class="setup-card">
     <div class="setup-head">
       <div id="logoSetup"></div>
       <div class="setup-head-text">
-        <h1>Koneksi ke Google Drive</h1>
-        <p>4 langkah mudah · tanpa Cloud Console</p>
+        <h1>Koneksi Google Drive</h1>
+        <p>4 langkah · tanpa Cloud Console · gratis selamanya</p>
       </div>
     </div>
     <div class="setup-body">
-      <p style="font-size:13px;color:var(--g600);line-height:1.7;margin-bottom:18px">
-        Gunakan <strong>Google Apps Script</strong> sebagai penghubung ke Google Drive Anda. Gratis, aman, dan tidak butuh pengaturan teknis yang rumit.
-      </p>
+      <div class="setup-intro">
+        Gunakan <strong>Google Apps Script</strong> sebagai penghubung antara SIATRA dan Google Drive Anda. Semua data dan file arsip otomatis tersimpan di Drive.
+      </div>
       <div class="setup-steps">
         <div class="stp">
           <div class="stp-num">1</div>
           <div class="stp-content">
             <div class="stp-title">Buka Google Apps Script</div>
-            <div class="stp-desc">Kunjungi <a href="https://script.google.com/home/start" target="_blank">script.google.com</a>, login dengan <strong>petarungmajene@gmail.com</strong>, klik <strong>"+ New project"</strong>, lalu hapus semua kode di editor (Ctrl+A → Delete).</div>
+            <div class="stp-desc">Buka <a href="https://script.google.com/home/start" target="_blank">script.google.com</a>, login dengan <strong>petarungmajene@gmail.com</strong>, klik <strong>"+ New project"</strong>, lalu hapus semua kode di editor (Ctrl+A → Delete).</div>
           </div>
         </div>
         <div class="stp">
           <div class="stp-num">2</div>
           <div class="stp-content">
-            <div class="stp-title">Salin & Tempel kode ini ke editor</div>
-            <div class="stp-desc">Klik <strong>Salin Kode</strong>, tempel (Ctrl+V) ke editor, lalu tekan <strong>Ctrl+S</strong>:</div>
+            <div class="stp-title">Salin & Tempel kode backend ini</div>
+            <div class="stp-desc">Klik <strong>Salin Kode</strong> lalu tempel ke editor Apps Script, kemudian tekan <strong>Ctrl+S</strong>:</div>
             <div class="code-block">
               <div class="code-toolbar">
-                <span class="code-lang">Google Apps Script — Code.gs</span>
+                <span class="code-lang">Code.gs — Google Apps Script</span>
                 <button class="copy-btn" id="copyBtn" onclick="copyScript()">📋 Salin Kode</button>
               </div>
               <div class="code-scroll"><pre id="scriptCode">function doGet(e){return respond(handle(e))}
@@ -273,22 +883,22 @@ function uploadFile(b){
             <div class="stp-title">Deploy sebagai Web App</div>
             <div class="stp-desc">Klik <strong>Deploy → New deployment → Web app</strong>:</div>
             <div class="deploy-box">
-              <div>⚙️ <strong>Execute as:</strong> <span class="pill">Me</span></div>
-              <div>🌐 <strong>Who has access:</strong> <span class="pill">Anyone</span></div>
-              <div style="margin-top:6px;font-size:12px;color:var(--g800)">Klik <strong>Deploy → Authorize access → Allow → Done</strong></div>
+              <div class="deploy-row"><strong>Execute as:</strong> <span class="pill">Me (petarungmajene@gmail.com)</span></div>
+              <div class="deploy-row"><strong>Who has access:</strong> <span class="pill">Anyone</span></div>
+              <div class="deploy-note">Klik <strong>Deploy → Authorize access → Allow → Done</strong></div>
             </div>
           </div>
         </div>
         <div class="stp" style="padding-bottom:0">
           <div class="stp-num">4</div>
           <div class="stp-content" style="padding-bottom:0">
-            <div class="stp-title">Tempel URL Web App di sini</div>
-            <div class="stp-desc">Salin URL deployment <span style="font-family:monospace;font-size:11px;background:var(--g100);padding:1px 5px;border-radius:4px">https://script.google.com/macros/s/.../exec</span> lalu tempel:</div>
+            <div class="stp-title">Tempel URL Web App</div>
+            <div class="stp-desc">Salin URL yang muncul setelah deploy <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--slate-100);padding:1px 6px;border-radius:4px;color:var(--navy-2)">…/macros/s/.../exec</span></div>
             <div class="url-row">
               <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
               <button class="btn-connect" onclick="connectGAS()">🔗 Hubungkan</button>
             </div>
-            <p class="hint">🔒 URL hanya disimpan di browser Anda, tidak dikirim ke pihak lain.</p>
+            <p class="setup-hint">URL hanya tersimpan di browser Anda, tidak dikirim ke pihak lain.</p>
           </div>
         </div>
       </div>
@@ -296,60 +906,149 @@ function uploadFile(b){
   </div>
 </div>
 
-<!-- ════════════════════ MAIN APP ════════════════════ -->
+<!-- ══════════════════════════════ MAIN APP ════════════════════════════════── -->
 <div id="app" class="hidden">
 
   <header class="header">
+    <div class="header-decor"></div>
     <div class="header-inner">
-      <div class="header-left">
-        <div class="logo-group">
+      <div class="header-brand">
+        <div class="logo-block">
           <div id="logoPUPR"></div>
-          <div class="logo-divider"></div>
+          <div class="logo-sep"></div>
           <div id="logoMajene"></div>
         </div>
-        <div class="header-text">
-          <div class="h-sup">Kementerian Pekerjaan Umum dan Perumahan Rakyat</div>
-          <div class="h-title">SISTEM INFORMASI ARSIP TATA RUANG</div>
-          <div class="h-sub">Bidang Tata Ruang — Kabupaten Majene, Sulawesi Barat</div>
+        <div class="header-identity">
+          <div class="h-kementerian">Kementerian Pekerjaan Umum dan Perumahan Rakyat</div>
+          <div class="h-system-name">
+            Sistem Informasi Arsip Tata Ruang
+            <span class="siatra-badge">SIATRA</span>
+          </div>
+          <div class="h-location">Bidang Tata Ruang — Kabupaten Majene, Sulawesi Barat</div>
         </div>
       </div>
-      <div class="header-right">
-        <div class="sync-pill sp-load" id="syncPill" onclick="loadData()" title="Klik untuk refresh">
+      <div class="header-actions">
+        <div class="sync-chip sc-load" id="syncPill" onclick="loadData()" title="Klik untuk refresh manual">
           <div class="spinner" id="syncIco"></div>
           <span id="syncTxt">Memuat...</span>
         </div>
-        <button class="recfg-btn" onclick="reconfigure()">⚙ Konfigurasi</button>
+        <button class="cfg-btn" onclick="reconfigure()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Konfigurasi
+        </button>
       </div>
     </div>
   </header>
 
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-icon si-total">📊</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-total">0</div>
+          <div class="stat-label">Total Arsip</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon si-fpr">📋</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-fpr">0</div>
+          <div class="stat-label">Arsip FPR</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon si-suket">📄</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-suket">0</div>
+          <div class="stat-label">Suket Zonasi</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon si-skkr">🏗️</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-skkr">0</div>
+          <div class="stat-label">SKKR PBG</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon si-surat">📑</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-surat">0</div>
+          <div class="stat-label">Surat PBG</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <nav class="tab-nav">
     <div class="tab-inner">
-      <button class="tab-btn tab-active" data-t="fpr"   onclick="switchTab('fpr')">📋 Arsip FPR</button>
-      <button class="tab-btn"            data-t="suket" onclick="switchTab('suket')">📄 Suket Zonasi</button>
-      <button class="tab-btn"            data-t="skkr"  onclick="switchTab('skkr')">🏗️ SKKR PBG</button>
-      <button class="tab-btn"            data-t="surat" onclick="switchTab('surat')">📑 Surat PBG</button>
+      <button class="tab-btn tab-active" data-t="fpr" onclick="switchTab('fpr')">
+        📋 Arsip FPR <span class="tab-badge" id="tb-fpr">0</span>
+      </button>
+      <button class="tab-btn" data-t="suket" onclick="switchTab('suket')">
+        📄 Suket Zonasi <span class="tab-badge" id="tb-suket">0</span>
+      </button>
+      <button class="tab-btn" data-t="skkr" onclick="switchTab('skkr')">
+        🏗️ SKKR PBG <span class="tab-badge" id="tb-skkr">0</span>
+      </button>
+      <button class="tab-btn" data-t="surat" onclick="switchTab('surat')">
+        📑 Surat PBG <span class="tab-badge" id="tb-surat">0</span>
+      </button>
     </div>
   </nav>
 
   <main class="main">
+    <div class="section-header">
+      <div class="section-title-block">
+        <div class="section-label">Manajemen Arsip</div>
+        <div class="section-title" id="sectionTitle">Arsip FPR</div>
+        <div class="section-desc" id="sectionDesc">Forum Penataan Ruang — Data permohonan dan persetujuan</div>
+      </div>
+    </div>
+
     <div class="toolbar">
       <div class="toolbar-l">
         <div class="filter-wrap">
-          <span class="filter-lbl">Filter Tahun</span>
-          <input type="text" class="fsel" id="fTahun" placeholder="Ketik tahun..." oninput="renderTable()">
+          <div class="filter-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <input type="text" class="fsel" id="fTahun" placeholder="Cari tahun…" oninput="renderTable()">
         </div>
         <span class="count-tag" id="countTag">0 Data</span>
       </div>
       <div class="toolbar-r">
-        <button class="btn-export" onclick="exportExcel()">📊 Export Excel</button>
-        <button class="btn-add" onclick="openModal(null)">＋ Tambah Data</button>
+        <button class="btn btn-secondary" onclick="exportExcel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export Excel
+        </button>
+        <button class="btn btn-primary" onclick="openModal(null)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Data
+        </button>
       </div>
     </div>
+
     <div class="table-card" id="tableCard"></div>
   </main>
 
-  <footer>© <span id="fy"></span> Bidang Tata Ruang Kabupaten Majene &nbsp;·&nbsp; Kementerian PUPR RI &nbsp;|&nbsp; Data tersinkronisasi ke Google Drive petarungmajene@gmail.com</footer>
+  <footer>
+    <div class="footer-brand">
+      <div id="logoFooter" style="opacity:.6"></div>
+      <div>
+        <strong>SIATRA</strong> — Sistem Informasi Arsip Tata Ruang<br>
+        <span>© <span id="fy"></span> Bidang Tata Ruang, Kabupaten Majene · Kementerian PUPR RI</span>
+      </div>
+    </div>
+    <div class="footer-meta">
+      Data tersinkronisasi dengan
+      <div class="footer-drive">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8.8 2L3 12.1l5.8 9.9h11.6L26.2 12 20.4 2H8.8z" opacity=".1"/><path d="M3 12.1L8.8 22h6.4L9.4 12.1H3z" fill="#34A853" opacity=".8"/><path d="M20.4 2H8.8L14.6 12l5.8-10z" fill="#4285F4" opacity=".8"/><path d="M14.6 12l-5.2 10h11.4l-6.2-10z" fill="#FBBC04" opacity=".8"/></svg>
+        Google Drive · petarungmajene@gmail.com
+      </div>
+    </div>
+  </footer>
+
 </div>
 
 <!-- MODAL -->
@@ -358,12 +1057,14 @@ function uploadFile(b){
 </div>
 
 <!-- TOAST -->
-<div class="toast hidden" id="toastEl"></div>
+<div class="toast hidden" id="toastEl">
+  <span class="toast-icon" id="toastIco"></span>
+  <span id="toastMsg"></span>
+</div>
 
 <script>
-/* ══════════════════════════════ LOGOS ═══════════════════════════════════════ */
-/* PUPR Logo */
-const PUPR_SVG=`<svg width="52" height="60" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+/* ══════════════════════════════ LOGOS ═══════════════════════════════════ */
+const PUPR_SVG=`<svg width="48" height="56" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
 <rect width="200" height="230" fill="#2D2A6E"/>
 <rect x="7" y="7" width="186" height="216" fill="#F9C800"/>
 <rect x="15" y="15" width="170" height="200" fill="#2D2A6E"/>
@@ -379,61 +1080,52 @@ const PUPR_SVG=`<svg width="52" height="60" viewBox="0 0 200 230" xmlns="http://
 <rect x="108" y="176" width="48" height="39" fill="#2D2A6E"/>
 </svg>`;
 
-/* Majene Kabupaten Logo — lambang daerah Majene Sulbar */
-const MAJENE_SVG=`<svg width="52" height="60" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer seal border -->
-  <ellipse cx="100" cy="112" rx="96" ry="108" fill="#1A5C2A"/>
-  <ellipse cx="100" cy="112" rx="90" ry="102" fill="#F5C500"/>
-  <ellipse cx="100" cy="112" rx="83" ry="95" fill="#1A5C2A"/>
-  <!-- Inner shield body -->
-  <path d="M100 28 L168 60 L168 130 Q168 185 100 210 Q32 185 32 130 L32 60 Z" fill="#F5C500"/>
-  <!-- Blue sky strip top -->
-  <path d="M100 28 L168 60 L168 85 L32 85 L32 60 Z" fill="#1565C0"/>
-  <!-- Laut strip bottom -->
-  <path d="M32 165 L168 165 Q155 195 100 210 Q45 195 32 165 Z" fill="#1565C0"/>
-  <!-- Gunung/mountain silhouette -->
-  <polygon points="70,165 100,105 130,165" fill="#1A5C2A"/>
-  <polygon points="45,165 72,118 99,165" fill="#2E7D32"/>
-  <!-- Rice/padi left -->
-  <line x1="52" y1="155" x2="52" y2="95" stroke="#F5C500" stroke-width="2.5"/>
-  <ellipse cx="52" cy="95" rx="4" ry="7" fill="#F5C500"/>
-  <ellipse cx="48" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(-20,48,103)"/>
-  <ellipse cx="56" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(20,56,103)"/>
-  <ellipse cx="46" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(-30,46,113)"/>
-  <ellipse cx="58" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(30,58,113)"/>
-  <!-- Rice/padi right -->
-  <line x1="148" y1="155" x2="148" y2="95" stroke="#F5C500" stroke-width="2.5"/>
-  <ellipse cx="148" cy="95" rx="4" ry="7" fill="#F5C500"/>
-  <ellipse cx="144" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(-20,144,103)"/>
-  <ellipse cx="152" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(20,152,103)"/>
-  <ellipse cx="142" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(-30,142,113)"/>
-  <ellipse cx="154" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(30,154,113)"/>
-  <!-- Star top -->
-  <polygon points="100,35 103,44 112,44 105,50 108,59 100,53 92,59 95,50 88,44 97,44" fill="#F5C500"/>
-  <!-- Kapal/boat (laut) -->
-  <path d="M55 178 Q100 168 145 178 L138 188 Q100 183 62 188 Z" fill="#1A5C2A"/>
-  <!-- Text band bottom of shield -->
-  <text x="100" y="202" text-anchor="middle" font-size="10" font-weight="bold" font-family="sans-serif" fill="#1A5C2A" letter-spacing="1">MAJENE</text>
-  <!-- Outer ring text -->
-  <path id="topArc" d="M 18,112 A82,95 0 0,1 182,112" fill="none"/>
-  <text font-size="9" font-weight="bold" font-family="sans-serif" fill="#1A5C2A" letter-spacing="2">
-    <textPath href="#topArc" startOffset="12%">KABUPATEN MAJENE</textPath>
-  </text>
+const MAJENE_SVG=`<svg width="48" height="56" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="100" cy="112" rx="96" ry="108" fill="#1A5C2A"/>
+<ellipse cx="100" cy="112" rx="90" ry="102" fill="#F5C500"/>
+<ellipse cx="100" cy="112" rx="83" ry="95" fill="#1A5C2A"/>
+<path d="M100 28 L168 60 L168 130 Q168 185 100 210 Q32 185 32 130 L32 60 Z" fill="#F5C500"/>
+<path d="M100 28 L168 60 L168 85 L32 85 L32 60 Z" fill="#1565C0"/>
+<path d="M32 165 L168 165 Q155 195 100 210 Q45 195 32 165 Z" fill="#1565C0"/>
+<polygon points="70,165 100,105 130,165" fill="#1A5C2A"/>
+<polygon points="45,165 72,118 99,165" fill="#2E7D32"/>
+<line x1="52" y1="155" x2="52" y2="95" stroke="#F5C500" stroke-width="2.5"/>
+<ellipse cx="52" cy="95" rx="4" ry="7" fill="#F5C500"/>
+<ellipse cx="48" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(-20,48,103)"/>
+<ellipse cx="56" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(20,56,103)"/>
+<ellipse cx="46" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(-30,46,113)"/>
+<ellipse cx="58" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(30,58,113)"/>
+<line x1="148" y1="155" x2="148" y2="95" stroke="#F5C500" stroke-width="2.5"/>
+<ellipse cx="148" cy="95" rx="4" ry="7" fill="#F5C500"/>
+<ellipse cx="144" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(-20,144,103)"/>
+<ellipse cx="152" cy="103" rx="3.5" ry="6" fill="#F5C500" transform="rotate(20,152,103)"/>
+<ellipse cx="142" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(-30,142,113)"/>
+<ellipse cx="154" cy="113" rx="3" ry="6" fill="#F5C500" transform="rotate(30,154,113)"/>
+<polygon points="100,35 103,44 112,44 105,50 108,59 100,53 92,59 95,50 88,44 97,44" fill="#F5C500"/>
+<path d="M55 178 Q100 168 145 178 L138 188 Q100 183 62 188 Z" fill="#1A5C2A"/>
+<text x="100" y="202" text-anchor="middle" font-size="10" font-weight="bold" font-family="sans-serif" fill="#1A5C2A" letter-spacing="1">MAJENE</text>
 </svg>`;
 
-document.getElementById('logoPUPR').innerHTML=PUPR_SVG;
-document.getElementById('logoMajene').innerHTML=MAJENE_SVG;
-document.getElementById('logoSetup').innerHTML=PUPR_SVG;
+['logoPUPR','logoSetup'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=PUPR_SVG;});
+['logoMajene'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=MAJENE_SVG;});
+const lf=document.getElementById('logoFooter');if(lf)lf.innerHTML=PUPR_SVG.replace('width="48"','width="28"').replace('height="56"','height="33"');
 document.getElementById('fy').textContent=new Date().getFullYear();
 
-/* ══════════════════════════════ STATE ════════════════════════════════════════ */
+/* ══════════════════════════════ STATE ═══════════════════════════════════ */
 let GAS_URL=localStorage.getItem('arsip_gas_url')||'';
 let db={fpr:[],suket:[],skkr:[],surat:[]};
 let activeTab='fpr';
 let editId=null;
 let pendingFiles={};
 
-/* ══════════════════════════════ SETUP ═══════════════════════════════════════ */
+const TAB_META={
+  fpr:{title:'Arsip FPR',desc:'Forum Penataan Ruang — Data permohonan dan persetujuan',icon:'📋'},
+  suket:{title:'Suket Zonasi Tata Ruang',desc:'Surat Keterangan Zonasi untuk pemohon',icon:'📄'},
+  skkr:{title:'SKKR PBG',desc:'Surat Keterangan Kesesuaian Ruang — Persetujuan Bangunan Gedung',icon:'🏗️'},
+  surat:{title:'Surat PBG',desc:'Surat Persetujuan Bangunan Gedung dari Pemohon',icon:'📑'},
+};
+
+/* ══════════════════════════════ SETUP ═══════════════════════════════════ */
 function copyScript(){
   const code=document.getElementById('scriptCode').textContent;
   const btn=document.getElementById('copyBtn');
@@ -441,22 +1133,17 @@ function copyScript(){
   if(navigator.clipboard)navigator.clipboard.writeText(code).then(ok).catch(()=>fbCopy(code,ok));
   else fbCopy(code,ok);
 }
-function fbCopy(text,cb){
-  const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';
-  document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');cb();}catch(e){}
-  document.body.removeChild(ta);
-}
+function fbCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');cb();}catch(e){}document.body.removeChild(ta);}
 function connectGAS(){
   const url=document.getElementById('gasUrl').value.trim();
-  if(!url||!url.startsWith('https://script.google.com/macros')){showToast('URL tidak valid!','err');return;}
+  if(!url||!url.startsWith('https://script.google.com/macros')){showToast('URL tidak valid! Harus diawali https://script.google.com/macros','err');return;}
   GAS_URL=url;localStorage.setItem('arsip_gas_url',url);
   document.getElementById('setupOverlay').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   loadData();
 }
 function reconfigure(){
-  if(!confirm('Reset konfigurasi?')) return;
+  if(!confirm('Reset konfigurasi dan masukkan URL baru?'))return;
   localStorage.removeItem('arsip_gas_url');
   GAS_URL='';db={fpr:[],suket:[],skkr:[],surat:[]};
   document.getElementById('app').classList.add('hidden');
@@ -464,18 +1151,14 @@ function reconfigure(){
   document.getElementById('setupOverlay').classList.remove('hidden');
 }
 (function(){
-  if(GAS_URL){
-    document.getElementById('setupOverlay').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    loadData();
-  }
+  if(GAS_URL){document.getElementById('setupOverlay').classList.add('hidden');document.getElementById('app').classList.remove('hidden');loadData();}
 })();
 
-/* ══════════════════════════════ GAS API ══════════════════════════════════════ */
+/* ══════════════════════════════ GAS API ═════════════════════════════════ */
 async function callGAS(payload){
   const r=await fetch(GAS_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
   const txt=await r.text();
-  try{return JSON.parse(txt);}catch(e){throw new Error('Response tidak valid. Pastikan deploy sudah benar.');}
+  try{return JSON.parse(txt);}catch(e){throw new Error('Response tidak valid.');}
 }
 async function loadData(){
   setSyncPill('load','Memuat data...');
@@ -485,7 +1168,7 @@ async function loadData(){
     db=res.data||{fpr:[],suket:[],skkr:[],surat:[]};
     ['fpr','suket','skkr','surat'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
     setSyncPill('ok','Tersinkronisasi ✓');
-    renderTable();
+    updateStats();renderTable();
   }catch(e){setSyncPill('err','Gagal terhubung');showToast('Gagal memuat: '+e.message,'err');}
 }
 async function saveDB(){
@@ -494,6 +1177,7 @@ async function saveDB(){
     const res=await callGAS({action:'save',data:db});
     if(!res.ok)throw new Error(res.error);
     setSyncPill('ok','Tersimpan ✓');
+    updateStats();
   }catch(e){setSyncPill('err','Gagal simpan');showToast('Gagal menyimpan: '+e.message,'err');}
 }
 async function uploadFileToDrive(file,subfolder){
@@ -512,19 +1196,36 @@ async function uploadFileToDrive(file,subfolder){
   });
 }
 
-/* ══════════════════════════════ SYNC PILL ════════════════════════════════════ */
+/* ══════════════════════════════ SYNC PILL ═══════════════════════════════ */
 function setSyncPill(type,txt){
   const p=document.getElementById('syncPill'),i=document.getElementById('syncIco'),t=document.getElementById('syncTxt');
-  p.className='sync-pill sp-'+type;
+  p.className='sync-chip sc-'+type;
   i.className=type==='load'?'spinner':'sync-dot';
   t.textContent=txt;
 }
 
-/* ══════════════════════════════ TABS & RENDER ════════════════════════════════ */
+/* ══════════════════════════════ STATS ═══════════════════════════════════ */
+function updateStats(){
+  const total=(db.fpr||[]).length+(db.suket||[]).length+(db.skkr||[]).length+(db.surat||[]).length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-fpr').textContent=(db.fpr||[]).length;
+  document.getElementById('st-suket').textContent=(db.suket||[]).length;
+  document.getElementById('st-skkr').textContent=(db.skkr||[]).length;
+  document.getElementById('st-surat').textContent=(db.surat||[]).length;
+  ['fpr','suket','skkr','surat'].forEach(k=>{
+    const el=document.getElementById('tb-'+k);
+    if(el)el.textContent=(db[k]||[]).length;
+  });
+}
+
+/* ══════════════════════════════ TABS & RENDER ═══════════════════════════ */
 function switchTab(t){
   activeTab=t;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('tab-active',b.dataset.t===t));
   document.getElementById('fTahun').value='';
+  const meta=TAB_META[t]||{};
+  document.getElementById('sectionTitle').textContent=meta.title||t;
+  document.getElementById('sectionDesc').textContent=meta.desc||'';
   renderTable();
 }
 function filtered(){
@@ -537,25 +1238,32 @@ function renderTable(){
   document.getElementById('countTag').textContent=data.length+' Data';
   const card=document.getElementById('tableCard');
   if(!data.length){card.innerHTML=emptyHtml();return;}
-  card.innerHTML='<div class="t-scroll">'+buildTable(data)+'</div>';
+  const meta=TAB_META[activeTab]||{};
+  const header=`<div class="table-card-header"><div class="tch-left"><div class="tch-icon">${meta.icon||'📄'}</div><div><div class="tch-title">${meta.title||activeTab}</div><div class="tch-count">${data.length} entri ditemukan</div></div></div></div>`;
+  card.innerHTML=header+'<div class="t-scroll">'+buildTable(data)+'</div>';
 }
 function emptyHtml(){
-  const labels={fpr:'Arsip FPR',suket:'Suket Zonasi',skkr:'SKKR PBG',surat:'Surat PBG'};
-  return`<div class="empty"><div class="empty-ico">🗂️</div><div class="empty-title">Belum ada data ${labels[activeTab]||activeTab}</div><div class="empty-sub">Klik "+ Tambah Data" untuk mulai mengarsip</div></div>`;
+  const meta=TAB_META[activeTab]||{};
+  return`<div class="empty">
+    <div class="empty-art">${meta.icon||'🗂️'}</div>
+    <div class="empty-title">Belum ada data ${meta.title||activeTab}</div>
+    <div class="empty-sub">Mulai tambahkan data arsip baru dengan klik tombol di bawah ini.</div>
+    <button class="empty-cta" onclick="openModal(null)">＋ Tambah Data Baru</button>
+  </div>`;
 }
 
-/* ── Table helpers ── */
-const tTh=v=>v?`<span class="tag-tahun">${v}</span>`:'—';
-const tZn=v=>v?`<span class="tag-zona">${v}</span>`:'—';
+/* Table helpers */
+const tTh=v=>v?`<span class="tag-tahun">${v}</span>`:'<span class="nofile">—</span>';
+const tZn=v=>v?`<span class="tag-zona">${v}</span>`:'<span class="nofile">—</span>';
 function tBadge(v){const m={'Disetujui':'bg-green','Tidak Disetujui':'bg-red','Disetujui Sebagian':'bg-amber'};return`<span class="badge ${m[v]||'bg-amber'}">${v||'—'}</span>`;}
 function tFile(name,id,url){
   if(!name)return'';
-  const short=name.length>15?name.slice(0,15)+'…':name;
+  const short=name.length>14?name.slice(0,14)+'…':name;
   if(id&&url)return`<a class="fchip" href="${url}" target="_blank" title="${name}">📎 ${short}</a>`;
   return`<span class="fchip fchip-up" title="${name}">⏳ ${short}</span>`;
 }
-function tAct(id){return`<td style="white-space:nowrap"><button class="act-btn" onclick="openModal('${id}')" title="Edit">✏️</button><button class="act-btn" onclick="delRow('${id}')" title="Hapus">🗑️</button></td>`;}
-function tNs(v){return v?`<span class="tnsurat">${v}</span>`:'<span class="nofile">—</span>';}
+function tNs(v){return v?`<span class="td-nosurat">${v}</span>`:'<span class="nofile">—</span>';}
+function tAct(id){return`<td><div class="act-wrap"><button class="act-btn act-edit" onclick="openModal('${id}')" title="Edit">✏️</button><button class="act-btn act-del" onclick="delRow('${id}')" title="Hapus">🗑️</button></div></td>`;}
 
 function buildTable(data){
   if(activeTab==='fpr')   return tableFPR(data);
@@ -566,112 +1274,85 @@ function buildTable(data){
 
 function tableFPR(data){
   const rows=data.map((r,i)=>`<tr>
-    <td class="tno">${i+1}</td>
+    <td class="td-no">${i+1}</td>
     <td>${tNs(r.nomorSurat)}</td>
-    <td class="tbold">${r.namaPemohon||'—'}</td><td class="tmono">${r.nikPemohon||'—'}</td>
-    <td class="tcenter">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
-    <td class="tcenter">${r.luasLahan?r.luasLahan+' m²':'—'}</td><td>${tZn(r.zonaLokasi)}</td><td>${tBadge(r.keterangan)}</td>
-    <td><div class="fchips">
-      ${tFile(r.f_dok_n,r.f_dok_id,r.f_dok_url)}${tFile(r.f_ba_n,r.f_ba_id,r.f_ba_url)}
-      ${tFile(r.f_und_n,r.f_und_id,r.f_und_url)}${tFile(r.f_sk_n,r.f_sk_id,r.f_sk_url)}
-      ${tFile(r.f_abs_n,r.f_abs_id,r.f_abs_url)}
-      ${!r.f_dok_n&&!r.f_ba_n&&!r.f_und_n&&!r.f_sk_n&&!r.f_abs_n?'<span class="nofile">—</span>':''}
-    </div></td>${tAct(r.id)}</tr>`).join('');
-  return`<table><thead><tr><th>No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>Keterangan</th><th>Dokumen</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td class="td-name">${r.namaPemohon||'—'}</td>
+    <td class="td-nik">${r.nikPemohon||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td>
+    <td>${r.rencanaKegiatan||'—'}</td>
+    <td>${r.alamatLokasi||'—'}</td>
+    <td class="td-center">${r.luasLahan?r.luasLahan+' m²':'—'}</td>
+    <td>${tZn(r.zonaLokasi)}</td>
+    <td>${tBadge(r.keterangan)}</td>
+    <td><div class="fchips">${tFile(r.f_dok_n,r.f_dok_id,r.f_dok_url)}${tFile(r.f_ba_n,r.f_ba_id,r.f_ba_url)}${tFile(r.f_und_n,r.f_und_id,r.f_und_url)}${tFile(r.f_sk_n,r.f_sk_id,r.f_sk_url)}${tFile(r.f_abs_n,r.f_abs_id,r.f_abs_url)}${!r.f_dok_n&&!r.f_ba_n&&!r.f_und_n&&!r.f_sk_n&&!r.f_abs_n?'<span class="nofile">—</span>':''}</div></td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>Keterangan</th><th>Dokumen</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function tableSuket(data){
   const rows=data.map((r,i)=>`<tr>
-    <td class="tno">${i+1}</td>
-    <td>${tNs(r.nomorSurat)}</td>
-    <td class="tbold">${r.namaPemohon||'—'}</td><td class="tmono">${r.nikPemohon||'—'}</td>
-    <td class="tcenter">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
-    <td class="tcenter">${r.luasLahan?r.luasLahan+' m²':'—'}</td><td>${tZn(r.zonaLokasi)}</td>
-    <td>${tFile(r.f_suket_n,r.f_suket_id,r.f_suket_url)||'<span class="nofile">—</span>'}</td>${tAct(r.id)}</tr>`).join('');
-  return`<table><thead><tr><th>No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>File SUKET</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td class="td-no">${i+1}</td><td>${tNs(r.nomorSurat)}</td>
+    <td class="td-name">${r.namaPemohon||'—'}</td><td class="td-nik">${r.nikPemohon||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
+    <td class="td-center">${r.luasLahan?r.luasLahan+' m²':'—'}</td><td>${tZn(r.zonaLokasi)}</td>
+    <td>${tFile(r.f_suket_n,r.f_suket_id,r.f_suket_url)||'<span class="nofile">—</span>'}</td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>File SUKET</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function tableSKKR(data){
   const rows=data.map((r,i)=>`<tr>
-    <td class="tno">${i+1}</td>
-    <td>${tNs(r.nomorSurat)}</td>
-    <td class="tbold">${r.namaPemohon||'—'}</td><td class="tmono">${r.nikPemohon||'—'}</td>
-    <td class="tcenter">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
-    <td class="tcenter">${r.luasLahan?r.luasLahan+' m²':'—'}</td><td>${tZn(r.zonaLokasi)}</td>
-    <td>${tFile(r.f_skkr_n,r.f_skkr_id,r.f_skkr_url)||'<span class="nofile">—</span>'}</td>${tAct(r.id)}</tr>`).join('');
-  return`<table><thead><tr><th>No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>File SKKR</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td class="td-no">${i+1}</td><td>${tNs(r.nomorSurat)}</td>
+    <td class="td-name">${r.namaPemohon||'—'}</td><td class="td-nik">${r.nikPemohon||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
+    <td class="td-center">${r.luasLahan?r.luasLahan+' m²':'—'}</td><td>${tZn(r.zonaLokasi)}</td>
+    <td>${tFile(r.f_skkr_n,r.f_skkr_id,r.f_skkr_url)||'<span class="nofile">—</span>'}</td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Lahan</th><th>Zona</th><th>File SKKR</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function tableSurat(data){
   const rows=data.map((r,i)=>`<tr>
-    <td class="tno">${i+1}</td>
-    <td>${tNs(r.nomorSurat)}</td>
-    <td class="tbold">${r.namaPemohon||'—'}</td><td class="tmono">${r.nikPemohon||'—'}</td>
-    <td class="tcenter">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
-    <td class="tcenter">${r.luasBangunan?r.luasBangunan+' m²':'—'}</td>
-    <td class="tcenter">${r.jumlahBangunan||'—'}</td><td class="tcenter">${r.jumlahLantai||'—'}</td>
-    <td>${tFile(r.f_pbg_n,r.f_pbg_id,r.f_pbg_url)||'<span class="nofile">—</span>'}</td>${tAct(r.id)}</tr>`).join('');
-  return`<table><thead><tr><th>No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Bangunan</th><th>Jml Bgn</th><th>Jml Lantai</th><th>File PBG</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td class="td-no">${i+1}</td><td>${tNs(r.nomorSurat)}</td>
+    <td class="td-name">${r.namaPemohon||'—'}</td><td class="td-nik">${r.nikPemohon||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td><td>${r.rencanaKegiatan||'—'}</td><td>${r.alamatLokasi||'—'}</td>
+    <td class="td-center">${r.luasBangunan?r.luasBangunan+' m²':'—'}</td>
+    <td class="td-center">${r.jumlahBangunan||'—'}</td><td class="td-center">${r.jumlahLantai||'—'}</td>
+    <td>${tFile(r.f_pbg_n,r.f_pbg_id,r.f_pbg_url)||'<span class="nofile">—</span>'}</td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Bangunan</th><th>Jml Bgn</th><th>Jml Lantai</th><th>File PBG</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-/* ══════════════════════════════ EXPORT EXCEL ═════════════════════════════════ */
+/* ══════════════════════════════ EXPORT EXCEL ════════════════════════════ */
 function exportExcel(){
-  const labels={fpr:'Arsip FPR',suket:'Suket Zonasi Tata Ruang',skkr:'SKKR PBG',surat:'Surat PBG'};
   const wb=XLSX.utils.book_new();
-
-  // Build sheets for all tabs
   const tabDefs={
-    fpr:{
-      label:'Arsip FPR',
-      cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','Keterangan Persetujuan','File Dokumentasi','File Berita Acara','File Undangan','File SK Forum','File Absen'],
-      map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.keterangan||'',r.f_dok_n||'',r.f_ba_n||'',r.f_und_n||'',r.f_sk_n||'',r.f_abs_n||'']
-    },
-    suket:{
-      label:'Suket Zonasi',
-      cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SUKET'],
-      map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_suket_n||'']
-    },
-    skkr:{
-      label:'SKKR PBG',
-      cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SKKR'],
-      map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_skkr_n||'']
-    },
-    surat:{
-      label:'Surat PBG',
-      cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Bangunan (m²)','Jumlah Bangunan','Jumlah Lantai','File Surat PBG'],
-      map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasBangunan||'',r.jumlahBangunan||'',r.jumlahLantai||'',r.f_pbg_n||'']
-    }
+    fpr:{label:'Arsip FPR',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','Keterangan Persetujuan','File Dokumentasi','File Berita Acara','File Undangan','File SK Forum','File Absen'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.keterangan||'',r.f_dok_n||'',r.f_ba_n||'',r.f_und_n||'',r.f_sk_n||'',r.f_abs_n||'']},
+    suket:{label:'Suket Zonasi',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SUKET'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_suket_n||'']},
+    skkr:{label:'SKKR PBG',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SKKR'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_skkr_n||'']},
+    surat:{label:'Surat PBG',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Bangunan (m²)','Jumlah Bangunan','Jumlah Lantai','File Surat PBG'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasBangunan||'',r.jumlahBangunan||'',r.jumlahLantai||'',r.f_pbg_n||'']}
   };
-
   let hasData=false;
   Object.entries(tabDefs).forEach(([key,def])=>{
-    const arr=db[key]||[];
-    if(!arr.length) return;
-    hasData=true;
-    const rows=[def.cols];
-    arr.forEach((r,i)=>rows.push([i+1,...def.map(r)]));
+    const arr=db[key]||[];if(!arr.length)return;hasData=true;
+    const rows=[def.cols];arr.forEach((r,i)=>rows.push([i+1,...def.map(r)]));
     const ws=XLSX.utils.aoa_to_sheet(rows);
-    // Column widths
     ws['!cols']=[{wch:4},{wch:22},{wch:22},{wch:18},{wch:8},{wch:30},{wch:30},{wch:12},{wch:22},{wch:14},{wch:20},{wch:20},{wch:20},{wch:20},{wch:20}];
     XLSX.utils.book_append_sheet(wb,ws,def.label);
   });
-
   if(!hasData){showToast('Tidak ada data untuk diekspor','err');return;}
-
   const now=new Date();
-  const dateStr=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-  const tabLabel={fpr:'FPR',suket:'Suket',skkr:'SKKR',surat:'SuratPBG'}[activeTab]||activeTab;
-  XLSX.writeFile(wb,`Rekap_Arsip_TataRuang_Majene_${dateStr}.xlsx`);
-  showToast('File Excel berhasil diunduh!');
+  const ds=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb,`Rekap_SIATRA_Majene_${ds}.xlsx`);
+  showToast('File Excel berhasil diunduh!','ok');
 }
 
-/* ══════════════════════════════ DELETE ══════════════════════════════════════ */
+/* ══════════════════════════════ DELETE ══════════════════════════════════ */
 async function delRow(id){
   if(!confirm('Hapus data ini dari arsip?'))return;
   db[activeTab]=db[activeTab].filter(r=>r.id!==id);
-  renderTable();
-  await saveDB();
+  renderTable();await saveDB();
   showToast('Data berhasil dihapus','err');
 }
 
-/* ══════════════════════════════ MODAL ═══════════════════════════════════════ */
+/* ══════════════════════════════ MODAL ══════════════════════════════════ */
 function openModal(id){
   editId=id;pendingFiles={};
   const item=id?(db[activeTab]||[]).find(r=>r.id===id):null;
@@ -688,24 +1369,25 @@ function closeModal(){
 }
 function bgClose(e){if(e.target===e.currentTarget)closeModal();}
 
-/* ── Form DSL ── */
+/* Form DSL */
 const gv=id=>(document.getElementById(id)||{}).value||'';
 const F=(lbl,req,html)=>`<div class="field"><label class="flbl">${lbl}${req?'<span class="req">*</span>':''}</label>${html}</div>`;
 const I=(id,val,ph)=>`<input class="inp" id="${id}" value="${val||''}" placeholder="${ph||''}">`;
-/* Tahun is now plain text input */
 const T=(id,val)=>`<input class="inp" id="${id}" value="${val||''}" placeholder="Contoh: 2024">`;
 function R(id,val){
   const opts=['Disetujui','Tidak Disetujui','Disetujui Sebagian'];
   return`<div class="radios">${opts.map(o=>`<div class="rbtn${val===o?' on':''}" onclick="pickR(this,'${id}')" data-v="${o}">${o}</div>`).join('')}</div><input type="hidden" id="${id}" value="${val||'Disetujui'}">`;
 }
 function pickR(el,id){el.closest('.radios').querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');document.getElementById(id).value=el.dataset.v;}
-
 function FR(key,label,en,eid,eurl,subfolder){
   let status='';
   if(eid&&eurl)status=`<a class="fstat fstat-ok" href="${eurl}" target="_blank">✅ ${en}</a>`;
   else if(en)status=`<span class="fstat fstat-pend">⏳ ${en}</span>`;
   return`<div class="file-row">
-    <label class="file-lbl"><span>📎</span><span>${label}</span><span class="opt">Opsional</span>
+    <label class="file-lbl">
+      <div class="file-icon-wrap">📎</div>
+      <span class="file-name-text">${label}</span>
+      <span class="opt-badge">Opsional</span>
       <input type="file" onchange="setPF('${key}',this,'${subfolder||''}')">
     </label>
     <div id="fv_${key}">${status}</div>
@@ -719,70 +1401,54 @@ function setPF(key,input,subfolder){
 function reqOk(...ids){for(const id of ids){if(!gv(id).trim()){showToast('Isi semua kolom wajib (*)','err');return false;}}return true;}
 
 /* ── Form builders ── */
+const FS=(title,icon,content)=>`<div class="form-section"><div class="form-section-head">${icon} ${title}</div><div class="form-section-body">${content}</div></div>`;
+
 function formFPR(r){r=r||{};
-  return`<div class="mhead"><h2>📋 ${r.id?'Edit':'Tambah'} Arsip FPR</h2><button class="mclose" onclick="closeModal()">✕</button></div>
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">📋</div><div><h2>${r.id?'Edit':'Tambah'} Arsip FPR</h2><div class="mhead-sub">Forum Penataan Ruang</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
   <div class="mbody">
-    <div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>
-    <div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>
-    <div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Contoh: Zona Permukiman'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>
-    ${F('Rencana Kegiatan',1,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}
-    ${F('Alamat Lokasi',1,I('fa',r.alamatLokasi,'Alamat lengkap lokasi'))}
-    ${F('Keterangan Persetujuan',1,R('fket',r.keterangan))}
-    <div class="sect-div"><span>Upload Dokumen (Opsional)</span></div>
-    <div class="grid2">
-      ${FR('dok','Dokumentasi',r.f_dok_n,r.f_dok_id,r.f_dok_url,'FPR')}
-      ${FR('ba','Berita Acara Hasil Forum',r.f_ba_n,r.f_ba_id,r.f_ba_url,'FPR')}
-      ${FR('und','Undangan Forum',r.f_und_n,r.f_und_id,r.f_und_url,'FPR')}
-      ${FR('sk','SK Forum',r.f_sk_n,r.f_sk_id,r.f_sk_url,'FPR')}
-      ${FR('abs','Absen Forum',r.f_abs_n,r.f_abs_id,r.f_abs_url,'FPR')}
-    </div>
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>`)}
+    ${FS('Data Pemohon','👤',`<div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>`)}
+    ${FS('Detail Lokasi','📍',`${F('Rencana Kegiatan',1,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}${F('Alamat Lokasi',1,I('fa',r.alamatLokasi,'Alamat lengkap lokasi'))}<div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Contoh: Zona Permukiman'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>`)}
+    ${FS('Keterangan Persetujuan','✅',`${F('Status',1,R('fket',r.keterangan))}`)}
+    ${FS('Dokumen Pendukung','📁',`<div class="grid2">${FR('dok','Dokumentasi',r.f_dok_n,r.f_dok_id,r.f_dok_url,'FPR')}${FR('ba','Berita Acara Hasil Forum',r.f_ba_n,r.f_ba_id,r.f_ba_url,'FPR')}${FR('und','Undangan Forum',r.f_und_n,r.f_und_id,r.f_und_url,'FPR')}${FR('sk','SK Forum',r.f_sk_n,r.f_sk_id,r.f_sk_url,'FPR')}${FR('abs','Absen Forum',r.f_abs_n,r.f_abs_id,r.f_abs_url,'FPR')}</div>`)}
   </div>
-  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveFPR('${r.id||''}')">💾 Simpan</button></div>`;
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveFPR('${r.id||''}')">💾 Simpan Data</button></div>`;
 }
 function formSuket(r){r=r||{};
-  return`<div class="mhead"><h2>📄 ${r.id?'Edit':'Tambah'} Suket Zonasi Tata Ruang</h2><button class="mclose" onclick="closeModal()">✕</button></div>
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">📄</div><div><h2>${r.id?'Edit':'Tambah'} Suket Zonasi</h2><div class="mhead-sub">Surat Keterangan Zonasi Tata Ruang</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
   <div class="mbody">
-    <div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>
-    <div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>
-    <div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Zona lokasi'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>
-    ${F('Rencana Kegiatan',1,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}
-    ${F('Alamat Lokasi',1,I('fa',r.alamatLokasi,'Alamat lengkap'))}
-    <div class="sect-div"><span>Upload Dokumen (Opsional)</span></div>
-    ${FR('suket','File SUKET',r.f_suket_n,r.f_suket_id,r.f_suket_url,'Suket Zonasi')}
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>`)}
+    ${FS('Data Pemohon','👤',`<div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>`)}
+    ${FS('Detail Lokasi','📍',`${F('Rencana Kegiatan',1,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}${F('Alamat Lokasi',1,I('fa',r.alamatLokasi,'Alamat lengkap'))}<div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Zona lokasi'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>`)}
+    ${FS('Dokumen SUKET','📁',FR('suket','File SUKET',r.f_suket_n,r.f_suket_id,r.f_suket_url,'Suket Zonasi'))}
   </div>
-  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSuket('${r.id||''}')">💾 Simpan</button></div>`;
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSuket('${r.id||''}')">💾 Simpan Data</button></div>`;
 }
 function formSKKR(r){r=r||{};
-  return`<div class="mhead"><h2>🏗️ ${r.id?'Edit':'Tambah'} Arsip SKKR PBG</h2><button class="mclose" onclick="closeModal()">✕</button></div>
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">🏗️</div><div><h2>${r.id?'Edit':'Tambah'} SKKR PBG</h2><div class="mhead-sub">Surat Keterangan Kesesuaian Ruang</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
   <div class="mbody">
-    <div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',0,T('ft',r.tahun))}</div>
-    <div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>
-    <div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Zona lokasi'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>
-    ${F('Rencana Kegiatan',0,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}
-    ${F('Alamat Lokasi',0,I('fa',r.alamatLokasi,'Alamat lengkap'))}
-    <div class="sect-div"><span>Upload Dokumen (Opsional)</span></div>
-    ${FR('skkr','File SKKR',r.f_skkr_n,r.f_skkr_id,r.f_skkr_url,'SKKR PBG')}
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',0,T('ft',r.tahun))}</div>`)}
+    ${FS('Data Pemohon','👤',`<div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>`)}
+    ${FS('Detail Lokasi','📍',`${F('Rencana Kegiatan',0,I('fk',r.rencanaKegiatan,'Deskripsi rencana kegiatan'))}${F('Alamat Lokasi',0,I('fa',r.alamatLokasi,'Alamat lengkap'))}<div class="grid2">${F('Zona Lokasi',0,I('fz',r.zonaLokasi,'Zona lokasi'))}${F('Luas Lahan (m²)',0,I('fl',r.luasLahan,'Contoh: 500'))}</div>`)}
+    ${FS('Dokumen SKKR','📁',FR('skkr','File SKKR',r.f_skkr_n,r.f_skkr_id,r.f_skkr_url,'SKKR PBG'))}
   </div>
-  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSKKR('${r.id||''}')">💾 Simpan</button></div>`;
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSKKR('${r.id||''}')">💾 Simpan Data</button></div>`;
 }
 function formSurat(r){r=r||{};
-  return`<div class="mhead"><h2>📑 ${r.id?'Edit':'Tambah'} Arsip Surat PBG</h2><button class="mclose" onclick="closeModal()">✕</button></div>
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">📑</div><div><h2>${r.id?'Edit':'Tambah'} Surat PBG</h2><div class="mhead-sub">Persetujuan Bangunan Gedung</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
   <div class="mbody">
-    <div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',0,T('ft',r.tahun))}</div>
-    <div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>
-    ${F('Rencana Kegiatan',0,I('fk',r.rencanaKegiatan,'Deskripsi'))}
-    ${F('Alamat Lokasi',0,I('fa',r.alamatLokasi,'Alamat lengkap'))}
-    <div class="grid3">${F('Luas Bangunan (m²)',0,I('flb',r.luasBangunan,'m²'))}${F('Jumlah Bangunan',0,I('fjb',r.jumlahBangunan,'Unit'))}${F('Jumlah Lantai',0,I('fjl',r.jumlahLantai,'Lantai'))}</div>
-    <div class="sect-div"><span>Upload Dokumen (Opsional)</span></div>
-    ${FR('pbg','File Surat PBG',r.f_pbg_n,r.f_pbg_id,r.f_pbg_url,'Surat PBG')}
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',0,T('ft',r.tahun))}</div>`)}
+    ${FS('Data Pemohon','👤',`<div class="grid2">${F('Nama Pemohon',1,I('fn',r.namaPemohon,'Nama lengkap'))}${F('NIK Pemohon',1,I('fi',r.nikPemohon,'16 digit NIK'))}</div>`)}
+    ${FS('Detail Bangunan','🏛️',`${F('Rencana Kegiatan',0,I('fk',r.rencanaKegiatan,'Deskripsi'))}${F('Alamat Lokasi',0,I('fa',r.alamatLokasi,'Alamat lengkap'))}<div class="grid3">${F('Luas Bangunan (m²)',0,I('flb',r.luasBangunan,'m²'))}${F('Jumlah Bangunan',0,I('fjb',r.jumlahBangunan,'Unit'))}${F('Jumlah Lantai',0,I('fjl',r.jumlahLantai,'Lantai'))}</div>`)}
+    ${FS('Dokumen PBG','📁',FR('pbg','File Surat PBG',r.f_pbg_n,r.f_pbg_id,r.f_pbg_url,'Surat PBG'))}
   </div>
-  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSurat('${r.id||''}')">💾 Simpan</button></div>`;
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSurat('${r.id||''}')">💾 Simpan Data</button></div>`;
 }
 
-/* ══════════════════════════════ SAVE HANDLERS ════════════════════════════════ */
+/* ══════════════════════════════ SAVE ════════════════════════════════════ */
 async function doSave(tab,rec,id,fileMap){
   const btn=document.getElementById('btnSave');
-  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Menyimpan...';}
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner" style="display:inline-block;border-top-color:#E8B800"></span> Menyimpan...';}
   for(const[recKey,pKey]of fileMap){
     const pf=pendingFiles[pKey];
     if(pf){
@@ -791,7 +1457,7 @@ async function doSave(tab,rec,id,fileMap){
         const res=await uploadFileToDrive(pf.file,pf.subfolder);
         rec[recKey+'_n']=res.name;rec[recKey+'_id']=res.id;rec[recKey+'_url']=res.url;
       }catch(e){showToast('Gagal upload '+pf.file.name,'err');}
-    } else if(id){
+    }else if(id){
       const ex=(db[tab]||[]).find(r=>r.id===id)||{};
       rec[recKey+'_n']=rec[recKey+'_n']||ex[recKey+'_n']||'';
       rec[recKey+'_id']=rec[recKey+'_id']||ex[recKey+'_id']||'';
@@ -803,48 +1469,42 @@ async function doSave(tab,rec,id,fileMap){
   else db[tab]=[...(db[tab]||[]),item];
   closeModal();renderTable();
   await saveDB();
-  showToast(id?'Data berhasil diperbarui':'Data berhasil disimpan');
+  showToast(id?'Data berhasil diperbarui':'Data berhasil disimpan','ok');
 }
-
 async function saveFPR(id){
   if(!reqOk('fn','fi','ft'))return;
   const ex=id?(db.fpr||[]).find(r=>r.id===id)||{}:{};
-  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),keterangan:gv('fket'),
-    f_dok_n:ex.f_dok_n||'',f_dok_id:ex.f_dok_id||'',f_dok_url:ex.f_dok_url||'',
-    f_ba_n:ex.f_ba_n||'',f_ba_id:ex.f_ba_id||'',f_ba_url:ex.f_ba_url||'',
-    f_und_n:ex.f_und_n||'',f_und_id:ex.f_und_id||'',f_und_url:ex.f_und_url||'',
-    f_sk_n:ex.f_sk_n||'',f_sk_id:ex.f_sk_id||'',f_sk_url:ex.f_sk_url||'',
-    f_abs_n:ex.f_abs_n||'',f_abs_id:ex.f_abs_id||'',f_abs_url:ex.f_abs_url||''};
+  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),keterangan:gv('fket'),f_dok_n:ex.f_dok_n||'',f_dok_id:ex.f_dok_id||'',f_dok_url:ex.f_dok_url||'',f_ba_n:ex.f_ba_n||'',f_ba_id:ex.f_ba_id||'',f_ba_url:ex.f_ba_url||'',f_und_n:ex.f_und_n||'',f_und_id:ex.f_und_id||'',f_und_url:ex.f_und_url||'',f_sk_n:ex.f_sk_n||'',f_sk_id:ex.f_sk_id||'',f_sk_url:ex.f_sk_url||'',f_abs_n:ex.f_abs_n||'',f_abs_id:ex.f_abs_id||'',f_abs_url:ex.f_abs_url||''};
   await doSave('fpr',rec,id,[['f_dok','dok'],['f_ba','ba'],['f_und','und'],['f_sk','sk'],['f_abs','abs']]);
 }
 async function saveSuket(id){
   if(!reqOk('fn','fi','ft'))return;
   const ex=id?(db.suket||[]).find(r=>r.id===id)||{}:{};
-  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),
-    f_suket_n:ex.f_suket_n||'',f_suket_id:ex.f_suket_id||'',f_suket_url:ex.f_suket_url||''};
+  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),f_suket_n:ex.f_suket_n||'',f_suket_id:ex.f_suket_id||'',f_suket_url:ex.f_suket_url||''};
   await doSave('suket',rec,id,[['f_suket','suket']]);
 }
 async function saveSKKR(id){
   if(!reqOk('fn','fi'))return;
   const ex=id?(db.skkr||[]).find(r=>r.id===id)||{}:{};
-  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),
-    f_skkr_n:ex.f_skkr_n||'',f_skkr_id:ex.f_skkr_id||'',f_skkr_url:ex.f_skkr_url||''};
+  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasLahan:gv('fl'),zonaLokasi:gv('fz'),f_skkr_n:ex.f_skkr_n||'',f_skkr_id:ex.f_skkr_id||'',f_skkr_url:ex.f_skkr_url||''};
   await doSave('skkr',rec,id,[['f_skkr','skkr']]);
 }
 async function saveSurat(id){
   if(!reqOk('fn','fi'))return;
   const ex=id?(db.surat||[]).find(r=>r.id===id)||{}:{};
-  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasBangunan:gv('flb'),jumlahBangunan:gv('fjb'),jumlahLantai:gv('fjl'),
-    f_pbg_n:ex.f_pbg_n||'',f_pbg_id:ex.f_pbg_id||'',f_pbg_url:ex.f_pbg_url||''};
+  const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasBangunan:gv('flb'),jumlahBangunan:gv('fjb'),jumlahLantai:gv('fjl'),f_pbg_n:ex.f_pbg_n||'',f_pbg_id:ex.f_pbg_id||'',f_pbg_url:ex.f_pbg_url||''};
   await doSave('surat',rec,id,[['f_pbg','pbg']]);
 }
 
-/* ══════════════════════════════ TOAST ═══════════════════════════════════════ */
+/* ══════════════════════════════ TOAST ══════════════════════════════════ */
 let _tt;
 function showToast(msg,type='ok'){
   const el=document.getElementById('toastEl');
+  const ico=document.getElementById('toastIco');
+  const tx=document.getElementById('toastMsg');
   const icons={ok:'✅',err:'❌',info:'ℹ️'};
-  el.textContent=(icons[type]||'ℹ️')+' '+msg;
+  ico.textContent=icons[type]||'ℹ️';
+  tx.textContent=msg;
   el.className=`toast ts-${type==='ok'?'ok':type==='err'?'err':'info'}`;
   el.classList.remove('hidden');
   clearTimeout(_tt);
