@@ -318,6 +318,8 @@ button,input,select,textarea{font-family:inherit}
 .si-suket{background:linear-gradient(135deg,#F0FDF4,#A7F3D0)}
 .si-skkr{background:linear-gradient(135deg,#FFF7ED,#FED7AA)}
 .si-surat{background:linear-gradient(135deg,#FDF4FF,#E9D5FF)}
+.si-skim{background:linear-gradient(135deg,#FFF1F2,#FECDD3)}
+.si-lainnya{background:linear-gradient(135deg,#F0F9FF,#BAE6FD)}
 .si-total{background:linear-gradient(135deg,var(--navy),var(--navy-3))}
 .stat-info{min-width:0}
 .stat-num{
@@ -859,7 +861,7 @@ function getFolder(){
 function getData(){
   var f=getFolder(),it=f.getFilesByName('arsip_data.json');
   if(it.hasNext())return JSON.parse(it.next().getBlob().getDataAsString());
-  return{fpr:[],suket:[],skkr:[],surat:[]};
+  return{fpr:[],suket:[],skkr:[],surat:[],skim:[],lainnya:[]};
 }
 function saveData(d){
   var f=getFolder(),c=JSON.stringify(d),it=f.getFilesByName('arsip_data.json');
@@ -913,11 +915,11 @@ function uploadFile(b){
     <div class="header-decor"></div>
     <div class="header-inner">
       <div class="header-brand">
-        <div class="logo-block">
-          <div id="logoPUPR"></div>
-          <div class="logo-sep"></div>
-          <div id="logoMajene"></div>
-        </div>
+     <div class="logo-group">
+    <img src="gambar/gambar/gambar_1.png" style="height: 40px; width: auto;" alt="Logo PUPR">
+    <div class="logo-divider"></div>
+    <img src="gambar/gambar/gambar_2.png" style="height: 40px; width: auto;" alt="Logo Majene">
+</div>
         <div class="header-identity">
           <div class="h-kementerian">Kementerian Pekerjaan Umum dan Perumahan Rakyat</div>
           <div class="h-system-name">
@@ -978,6 +980,20 @@ function uploadFile(b){
           <div class="stat-label">Surat PBG</div>
         </div>
       </div>
+      <div class="stat-item">
+        <div class="stat-icon si-skim">🏅</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-skim">0</div>
+          <div class="stat-label">SK TIM</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon si-lainnya">📂</div>
+        <div class="stat-info">
+          <div class="stat-num" id="st-lainnya">0</div>
+          <div class="stat-label">Surat Lainnya</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -994,6 +1010,12 @@ function uploadFile(b){
       </button>
       <button class="tab-btn" data-t="surat" onclick="switchTab('surat')">
         📑 Surat PBG <span class="tab-badge" id="tb-surat">0</span>
+      </button>
+      <button class="tab-btn" data-t="skim" onclick="switchTab('skim')">
+        🏅 SK TIM <span class="tab-badge" id="tb-skim">0</span>
+      </button>
+      <button class="tab-btn" data-t="lainnya" onclick="switchTab('lainnya')">
+        📂 Surat Lainnya <span class="tab-badge" id="tb-lainnya">0</span>
       </button>
     </div>
   </nav>
@@ -1012,6 +1034,12 @@ function uploadFile(b){
         <div class="filter-wrap">
           <div class="filter-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <input type="text" class="fsel" id="fNama" placeholder="Cari nama…" oninput="renderTable()">
+        </div>
+        <div class="filter-wrap">
+          <div class="filter-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
           <input type="text" class="fsel" id="fTahun" placeholder="Cari tahun…" oninput="renderTable()">
         </div>
@@ -1113,7 +1141,7 @@ document.getElementById('fy').textContent=new Date().getFullYear();
 
 /* ══════════════════════════════ STATE ═══════════════════════════════════ */
 let GAS_URL=localStorage.getItem('arsip_gas_url')||'';
-let db={fpr:[],suket:[],skkr:[],surat:[]};
+let db={fpr:[],suket:[],skkr:[],surat:[],skim:[],lainnya:[]};
 let activeTab='fpr';
 let editId=null;
 let pendingFiles={};
@@ -1123,6 +1151,8 @@ const TAB_META={
   suket:{title:'Suket Zonasi Tata Ruang',desc:'Surat Keterangan Zonasi untuk pemohon',icon:'📄'},
   skkr:{title:'SKKR PBG',desc:'Surat Keterangan Kesesuaian Ruang — Persetujuan Bangunan Gedung',icon:'🏗️'},
   surat:{title:'Surat PBG',desc:'Surat Persetujuan Bangunan Gedung dari Pemohon',icon:'📑'},
+  skim:{title:'SK TIM',desc:'Surat Keputusan Tim — Data SK tim bidang tata ruang',icon:'🏅'},
+  lainnya:{title:'Surat Lainnya',desc:'Arsip surat-surat lain bidang tata ruang',icon:'📂'},
 };
 
 /* ══════════════════════════════ SETUP ═══════════════════════════════════ */
@@ -1145,7 +1175,7 @@ function connectGAS(){
 function reconfigure(){
   if(!confirm('Reset konfigurasi dan masukkan URL baru?'))return;
   localStorage.removeItem('arsip_gas_url');
-  GAS_URL='';db={fpr:[],suket:[],skkr:[],surat:[]};
+  GAS_URL='';db={fpr:[],suket:[],skkr:[],surat:[],skim:[],lainnya:[]};
   document.getElementById('app').classList.add('hidden');
   document.getElementById('gasUrl').value='';
   document.getElementById('setupOverlay').classList.remove('hidden');
@@ -1165,8 +1195,8 @@ async function loadData(){
   try{
     const res=await callGAS({action:'get'});
     if(!res.ok)throw new Error(res.error);
-    db=res.data||{fpr:[],suket:[],skkr:[],surat:[]};
-    ['fpr','suket','skkr','surat'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
+    db=res.data||{fpr:[],suket:[],skkr:[],surat:[],skim:[],lainnya:[]};
+    ['fpr','suket','skkr','surat','skim','lainnya'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
     setSyncPill('ok','Tersinkronisasi ✓');
     updateStats();renderTable();
   }catch(e){setSyncPill('err','Gagal terhubung');showToast('Gagal memuat: '+e.message,'err');}
@@ -1206,13 +1236,15 @@ function setSyncPill(type,txt){
 
 /* ══════════════════════════════ STATS ═══════════════════════════════════ */
 function updateStats(){
-  const total=(db.fpr||[]).length+(db.suket||[]).length+(db.skkr||[]).length+(db.surat||[]).length;
+  const total=(db.fpr||[]).length+(db.suket||[]).length+(db.skkr||[]).length+(db.surat||[]).length+(db.skim||[]).length+(db.lainnya||[]).length;
   document.getElementById('st-total').textContent=total;
   document.getElementById('st-fpr').textContent=(db.fpr||[]).length;
   document.getElementById('st-suket').textContent=(db.suket||[]).length;
   document.getElementById('st-skkr').textContent=(db.skkr||[]).length;
   document.getElementById('st-surat').textContent=(db.surat||[]).length;
-  ['fpr','suket','skkr','surat'].forEach(k=>{
+  document.getElementById('st-skim').textContent=(db.skim||[]).length;
+  document.getElementById('st-lainnya').textContent=(db.lainnya||[]).length;
+  ['fpr','suket','skkr','surat','skim','lainnya'].forEach(k=>{
     const el=document.getElementById('tb-'+k);
     if(el)el.textContent=(db[k]||[]).length;
   });
@@ -1222,6 +1254,7 @@ function updateStats(){
 function switchTab(t){
   activeTab=t;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('tab-active',b.dataset.t===t));
+  document.getElementById('fNama').value='';
   document.getElementById('fTahun').value='';
   const meta=TAB_META[t]||{};
   document.getElementById('sectionTitle').textContent=meta.title||t;
@@ -1229,9 +1262,14 @@ function switchTab(t){
   renderTable();
 }
 function filtered(){
+  const n=(document.getElementById('fNama').value||'').trim().toLowerCase();
   const y=(document.getElementById('fTahun').value||'').trim().toLowerCase();
   const arr=db[activeTab]||[];
-  return y?arr.filter(r=>(r.tahun||'').toLowerCase().includes(y)):arr;
+  return arr.filter(r=>{
+    const matchN=!n||(r.namaPemohon||r.namaTim||r.judul||'').toLowerCase().includes(n);
+    const matchY=!y||(r.tahun||'').toLowerCase().includes(y);
+    return matchN&&matchY;
+  });
 }
 function renderTable(){
   const data=filtered();
@@ -1266,9 +1304,11 @@ function tNs(v){return v?`<span class="td-nosurat">${v}</span>`:'<span class="no
 function tAct(id){return`<td><div class="act-wrap"><button class="act-btn act-edit" onclick="openModal('${id}')" title="Edit">✏️</button><button class="act-btn act-del" onclick="delRow('${id}')" title="Hapus">🗑️</button></div></td>`;}
 
 function buildTable(data){
-  if(activeTab==='fpr')   return tableFPR(data);
-  if(activeTab==='suket') return tableSuket(data);
-  if(activeTab==='skkr')  return tableSKKR(data);
+  if(activeTab==='fpr')     return tableFPR(data);
+  if(activeTab==='suket')   return tableSuket(data);
+  if(activeTab==='skkr')    return tableSKKR(data);
+  if(activeTab==='skim')    return tableSKTim(data);
+  if(activeTab==='lainnya') return tableLainnya(data);
   return tableSurat(data);
 }
 
@@ -1319,6 +1359,24 @@ function tableSurat(data){
     ${tAct(r.id)}</tr>`).join('');
   return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Pemohon</th><th>NIK</th><th>Tahun</th><th>Rencana Kegiatan</th><th>Alamat Lokasi</th><th>Luas Bangunan</th><th>Jml Bgn</th><th>Jml Lantai</th><th>File PBG</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
+function tableSKTim(data){
+  const rows=data.map((r,i)=>`<tr>
+    <td class="td-no">${i+1}</td><td>${tNs(r.nomorSurat)}</td>
+    <td class="td-name">${r.namaTim||'—'}</td><td class="td-nik">${r.nikKetua||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td><td>${r.tujuan||'—'}</td><td>${r.keterangan||'—'}</td>
+    <td>${tFile(r.f_skim_n,r.f_skim_id,r.f_skim_url)||'<span class="nofile">—</span>'}</td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Nama Tim</th><th>NIK Ketua</th><th>Tahun</th><th>Tujuan/Kegiatan</th><th>Keterangan</th><th>File SK TIM</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function tableLainnya(data){
+  const rows=data.map((r,i)=>`<tr>
+    <td class="td-no">${i+1}</td><td>${tNs(r.nomorSurat)}</td>
+    <td class="td-name">${r.judul||'—'}</td><td class="td-nik">${r.jenisSurat||'—'}</td>
+    <td class="td-center">${tTh(r.tahun)}</td><td>${r.perihal||'—'}</td><td>${r.keterangan||'—'}</td>
+    <td>${tFile(r.f_lain_n,r.f_lain_id,r.f_lain_url)||'<span class="nofile">—</span>'}</td>
+    ${tAct(r.id)}</tr>`).join('');
+  return`<table><thead><tr><th class="th-gold">No</th><th>No. Surat</th><th>Judul Surat</th><th>Jenis Surat</th><th>Tahun</th><th>Perihal</th><th>Keterangan</th><th>File Surat</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
 
 /* ══════════════════════════════ EXPORT EXCEL ════════════════════════════ */
 function exportExcel(){
@@ -1327,7 +1385,9 @@ function exportExcel(){
     fpr:{label:'Arsip FPR',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','Keterangan Persetujuan','File Dokumentasi','File Berita Acara','File Undangan','File SK Forum','File Absen'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.keterangan||'',r.f_dok_n||'',r.f_ba_n||'',r.f_und_n||'',r.f_sk_n||'',r.f_abs_n||'']},
     suket:{label:'Suket Zonasi',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SUKET'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_suket_n||'']},
     skkr:{label:'SKKR PBG',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan (m²)','Zona Lokasi','File SKKR'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasLahan||'',r.zonaLokasi||'',r.f_skkr_n||'']},
-    surat:{label:'Surat PBG',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Bangunan (m²)','Jumlah Bangunan','Jumlah Lantai','File Surat PBG'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasBangunan||'',r.jumlahBangunan||'',r.jumlahLantai||'',r.f_pbg_n||'']}
+    surat:{label:'Surat PBG',cols:['No','Nomor Surat','Nama Pemohon','NIK Pemohon','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Bangunan (m²)','Jumlah Bangunan','Jumlah Lantai','File Surat PBG'],map:r=>[r.nomorSurat||'',r.namaPemohon||'',r.nikPemohon||'',r.tahun||'',r.rencanaKegiatan||'',r.alamatLokasi||'',r.luasBangunan||'',r.jumlahBangunan||'',r.jumlahLantai||'',r.f_pbg_n||'']},
+    skim:{label:'SK TIM',cols:['No','Nomor Surat','Nama Tim','NIK Ketua','Tahun','Tujuan/Kegiatan','Keterangan','File SK TIM'],map:r=>[r.nomorSurat||'',r.namaTim||'',r.nikKetua||'',r.tahun||'',r.tujuan||'',r.keterangan||'',r.f_skim_n||'']},
+    lainnya:{label:'Surat Lainnya',cols:['No','Nomor Surat','Judul Surat','Jenis Surat','Tahun','Perihal','Keterangan','File Surat'],map:r=>[r.nomorSurat||'',r.judul||'',r.jenisSurat||'',r.tahun||'',r.perihal||'',r.keterangan||'',r.f_lain_n||'']}
   };
   let hasData=false;
   Object.entries(tabDefs).forEach(([key,def])=>{
@@ -1357,7 +1417,7 @@ function openModal(id){
   editId=id;pendingFiles={};
   const item=id?(db[activeTab]||[]).find(r=>r.id===id):null;
   const box=document.getElementById('modalBox');
-  const builders={fpr:formFPR,suket:formSuket,skkr:formSKKR,surat:formSurat};
+  const builders={fpr:formFPR,suket:formSuket,skkr:formSKKR,surat:formSurat,skim:formSKTim,lainnya:formSuratLainnya};
   box.innerHTML=(builders[activeTab]||formFPR)(item);
   document.getElementById('modalBg').classList.remove('hidden');
   document.body.style.overflow='hidden';
@@ -1444,6 +1504,26 @@ function formSurat(r){r=r||{};
   </div>
   <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSurat('${r.id||''}')">💾 Simpan Data</button></div>`;
 }
+function formSKTim(r){r=r||{};
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">🏅</div><div><h2>${r.id?'Edit':'Tambah'} SK TIM</h2><div class="mhead-sub">Surat Keputusan Tim Bidang Tata Ruang</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="mbody">
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>`)}
+    ${FS('Data Tim','👥',`<div class="grid2">${F('Nama Tim',1,I('fn',r.namaTim,'Nama tim/kelompok'))}${F('NIK Ketua',0,I('fi',r.nikKetua,'16 digit NIK Ketua'))}</div>`)}
+    ${FS('Detail SK','📋',`${F('Tujuan / Kegiatan',1,I('fk',r.tujuan,'Tujuan pembentukan tim'))}${F('Keterangan',0,I('fa',r.keterangan,'Keterangan tambahan'))}`)}
+    ${FS('Dokumen SK TIM','📁',FR('skim','File SK TIM',r.f_skim_n,r.f_skim_id,r.f_skim_url,'SK TIM'))}
+  </div>
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSKTim('${r.id||''}')">💾 Simpan Data</button></div>`;
+}
+function formSuratLainnya(r){r=r||{};
+  return`<div class="mhead"><div class="mhead-left"><div class="mhead-icon">📂</div><div><h2>${r.id?'Edit':'Tambah'} Surat Lainnya</h2><div class="mhead-sub">Arsip Surat Lain Bidang Tata Ruang</div></div></div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="mbody">
+    ${FS('Informasi Surat','🔢',`<div class="grid2">${F('Nomor Surat',0,I('fns',r.nomorSurat,'Contoh: 650/123/IV/2024'))}${F('Tahun',1,T('ft',r.tahun))}</div>`)}
+    ${FS('Identitas Surat','📄',`<div class="grid2">${F('Judul Surat',1,I('fn',r.judul,'Judul / nama surat'))}${F('Jenis Surat',1,I('fi',r.jenisSurat,'Contoh: Surat Tugas, Surat Edaran'))}</div>`)}
+    ${FS('Detail Surat','📋',`${F('Perihal',1,I('fk',r.perihal,'Perihal surat'))}${F('Keterangan',0,I('fa',r.keterangan,'Keterangan tambahan'))}`)}
+    ${FS('Dokumen Surat','📁',FR('lain','File Surat',r.f_lain_n,r.f_lain_id,r.f_lain_url,'Surat Lainnya'))}
+  </div>
+  <div class="mfooter"><button class="btn-cancel" onclick="closeModal()">Batal</button><button class="btn-save" id="btnSave" onclick="saveSuratLainnya('${r.id||''}')">💾 Simpan Data</button></div>`;
+}
 
 /* ══════════════════════════════ SAVE ════════════════════════════════════ */
 async function doSave(tab,rec,id,fileMap){
@@ -1494,6 +1574,18 @@ async function saveSurat(id){
   const ex=id?(db.surat||[]).find(r=>r.id===id)||{}:{};
   const rec={nomorSurat:gv('fns'),namaPemohon:gv('fn'),nikPemohon:gv('fi'),tahun:gv('ft'),rencanaKegiatan:gv('fk'),alamatLokasi:gv('fa'),luasBangunan:gv('flb'),jumlahBangunan:gv('fjb'),jumlahLantai:gv('fjl'),f_pbg_n:ex.f_pbg_n||'',f_pbg_id:ex.f_pbg_id||'',f_pbg_url:ex.f_pbg_url||''};
   await doSave('surat',rec,id,[['f_pbg','pbg']]);
+}
+async function saveSKTim(id){
+  if(!reqOk('fn','ft'))return;
+  const ex=id?(db.skim||[]).find(r=>r.id===id)||{}:{};
+  const rec={nomorSurat:gv('fns'),namaTim:gv('fn'),nikKetua:gv('fi'),tahun:gv('ft'),tujuan:gv('fk'),keterangan:gv('fa'),f_skim_n:ex.f_skim_n||'',f_skim_id:ex.f_skim_id||'',f_skim_url:ex.f_skim_url||''};
+  await doSave('skim',rec,id,[['f_skim','skim']]);
+}
+async function saveSuratLainnya(id){
+  if(!reqOk('fn','fi','ft','fk'))return;
+  const ex=id?(db.lainnya||[]).find(r=>r.id===id)||{}:{};
+  const rec={nomorSurat:gv('fns'),judul:gv('fn'),jenisSurat:gv('fi'),tahun:gv('ft'),perihal:gv('fk'),keterangan:gv('fa'),f_lain_n:ex.f_lain_n||'',f_lain_id:ex.f_lain_id||'',f_lain_url:ex.f_lain_url||''};
+  await doSave('lainnya',rec,id,[['f_lain','lain']]);
 }
 
 /* ══════════════════════════════ TOAST ══════════════════════════════════ */
