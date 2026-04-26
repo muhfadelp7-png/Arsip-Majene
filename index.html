@@ -1774,6 +1774,10 @@ function uploadFile(b){
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Export Excel
         </button>
+        <button class="btn btn-secondary" onclick="exportWord()" style="color:#1A5276;border-color:#2980B9;" title="Export ke Microsoft Word (.doc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          Export Word
+        </button>
         <button class="btn btn-primary" onclick="openModal(null)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Tambah Data
@@ -2208,6 +2212,164 @@ function exportExcel(){
   const ds=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb,`Rekap_SIATRA_Majene_${ds}.xlsx`);
   showToast('File Excel berhasil diunduh!','ok');
+}
+
+/* ══════════════════════════════ EXPORT WORD ════════════════════════════ */
+function exportWord(){
+  const arr=db[activeTab]||[];
+  if(!arr.length){showToast('Tidak ada data untuk diekspor','err');return;}
+
+  const meta=TAB_META[activeTab]||{};
+  const now=new Date();
+  const tgl=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+  const ds=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+
+  // Column definitions per tab
+  const tabCols={
+    fpr:  {heads:['No','No. Surat','Nama Pemohon','NIK','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan','Zona Lokasi','Keterangan','Dokumen'],
+           row:r=>[r.nomorSurat||'—',r.namaPemohon||'—',r.nikPemohon||'—',r.tahun||'—',r.rencanaKegiatan||'—',r.alamatLokasi||'—',r.luasLahan?(r.luasLahan+' m²'):'—',r.zonaLokasi||'—',r.keterangan||'—',[r.f_dok_n,r.f_ba_n,r.f_und_n,r.f_sk_n,r.f_abs_n].filter(Boolean).join(', ')||'—']},
+    suket:{heads:['No','No. Surat','Nama Pemohon','NIK','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan','Zona Lokasi','File SUKET'],
+           row:r=>[r.nomorSurat||'—',r.namaPemohon||'—',r.nikPemohon||'—',r.tahun||'—',r.rencanaKegiatan||'—',r.alamatLokasi||'—',r.luasLahan?(r.luasLahan+' m²'):'—',r.zonaLokasi||'—',r.f_suket_n||'—']},
+    skkr: {heads:['No','No. Surat','Nama Pemohon','NIK','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Lahan','Zona Lokasi','File SKKR'],
+           row:r=>[r.nomorSurat||'—',r.namaPemohon||'—',r.nikPemohon||'—',r.tahun||'—',r.rencanaKegiatan||'—',r.alamatLokasi||'—',r.luasLahan?(r.luasLahan+' m²'):'—',r.zonaLokasi||'—',r.f_skkr_n||'—']},
+    surat:{heads:['No','No. Surat','Nama Pemohon','NIK','Tahun','Rencana Kegiatan','Alamat Lokasi','Luas Bangunan','Jml Bgn','Jml Lantai','File PBG'],
+           row:r=>[r.nomorSurat||'—',r.namaPemohon||'—',r.nikPemohon||'—',r.tahun||'—',r.rencanaKegiatan||'—',r.alamatLokasi||'—',r.luasBangunan?(r.luasBangunan+' m²'):'—',r.jumlahBangunan||'—',r.jumlahLantai||'—',r.f_pbg_n||'—']},
+    skim: {heads:['No','No. Surat','Nama Tim','NIK Ketua','Tahun','Tujuan/Kegiatan','Keterangan','File SK TIM'],
+           row:r=>[r.nomorSurat||'—',r.namaTim||'—',r.nikKetua||'—',r.tahun||'—',r.tujuan||'—',r.keterangan||'—',r.f_skim_n||'—']},
+    lainnya:{heads:['No','No. Surat','Judul Surat','Jenis Surat','Tahun','Perihal','Keterangan','File Surat'],
+             row:r=>[r.nomorSurat||'—',r.judul||'—',r.jenisSurat||'—',r.tahun||'—',r.perihal||'—',r.keterangan||'—',r.f_lain_n||'—']}
+  };
+
+  const def=tabCols[activeTab]||tabCols.suket;
+  const heads=def.heads;
+  const colCount=heads.length;
+
+  // Build table header row
+  const thCells=heads.map((h,i)=>`
+    <td style="
+      background:#1A1860;
+      color:${i===0?'#F5C800':'rgba(255,255,255,0.85)'};
+      font-family:Arial,sans-serif;
+      font-size:8pt;
+      font-weight:bold;
+      padding:7px 8px;
+      text-align:${i===0||i===4?'center':'left'};
+      border:1px solid #0C0B2E;
+      white-space:nowrap;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    ">${h}</td>`).join('');
+
+  // Build data rows
+  const dataRows=arr.map((r,idx)=>{
+    const cells=[idx+1,...def.row(r)];
+    const isEven=idx%2===0;
+    const rowBg=isEven?'#FFFFFF':'#F7F8FC';
+    return `<tr>${cells.map((c,ci)=>{
+      const isNo=ci===0;
+      const isYear=ci===4; // Tahun column
+      const cellStyle=`
+        background:${isNo?'#FFFFFF':rowBg};
+        color:${isNo?'#8B91A8':'#2D3148'};
+        font-family:${isNo||isYear?'Courier New,monospace':'Arial,sans-serif'};
+        font-size:${isNo?'8pt':'9pt'};
+        font-weight:${ci===2?'bold':'normal'};
+        padding:9px 8px;
+        text-align:${isNo||isYear?'center':'left'};
+        border:1px solid #ECEEF6;
+        vertical-align:middle;
+      `;
+      // Year badge style
+      if(isYear&&c&&c!=='—'){
+        return `<td style="${cellStyle}"><span style="background:#1A1860;color:#F5C800;font-size:8pt;font-weight:bold;padding:2px 8px;border-radius:4px;font-family:Arial,sans-serif;">${c}</span></td>`;
+      }
+      // No. Surat style
+      if(ci===1&&c&&c!=='—'){
+        return `<td style="background:${rowBg};font-family:Courier New,monospace;font-size:8pt;font-weight:bold;color:#232080;padding:9px 8px;border:1px solid #ECEEF6;vertical-align:middle;">${c}</td>`;
+      }
+      return `<td style="${cellStyle}">${c||'—'}</td>`;
+    }).join('')}</tr>`;
+  }).join('');
+
+  const html=`
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 15">
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>
+  @page { size: A4 landscape; margin: 1.5cm 1.5cm 2cm 1.5cm; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #2D3148; }
+  table { border-collapse: collapse; width: 100%; }
+  p { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+
+<!-- Letterhead -->
+<table style="width:100%;border:none;margin-bottom:6pt;">
+  <tr>
+    <td style="width:60%;border:none;padding:0;">
+      <p style="font-family:Arial,sans-serif;font-size:8pt;font-weight:bold;color:#E8B800;letter-spacing:1px;margin-bottom:3pt;">PEMERINTAH KABUPATEN MAJENE</p>
+      <p style="font-family:Arial,sans-serif;font-size:14pt;font-weight:900;color:#1A1860;line-height:1.1;margin-bottom:2pt;">Sistem Informasi Arsip Tata Ruang</p>
+      <p style="font-family:Arial,sans-serif;font-size:8pt;color:#636980;">Bidang Tata Ruang — Kabupaten Majene, Sulawesi Barat</p>
+    </td>
+    <td style="width:40%;border:none;padding:0;text-align:right;vertical-align:bottom;">
+      <p style="font-family:Arial,sans-serif;font-size:8pt;color:#636980;">Dicetak: ${tgl}</p>
+      <p style="font-family:Arial,sans-serif;font-size:8pt;color:#636980;">Total Data: ${arr.length} arsip</p>
+    </td>
+  </tr>
+</table>
+
+<!-- Divider -->
+<table style="width:100%;border:none;margin-bottom:4pt;"><tr>
+  <td style="border:none;padding:0;border-top:3px solid #1A1860;"></td>
+  <td style="border:none;padding:0;width:80px;border-top:3px solid #E8B800;"></td>
+</tr></table>
+
+<!-- Section title -->
+<table style="width:100%;border:none;margin-bottom:10pt;"><tr>
+  <td style="border:none;padding:4pt 0;">
+    <p style="font-family:Arial,sans-serif;font-size:10pt;font-weight:bold;color:#636980;text-transform:uppercase;letter-spacing:1px;margin-bottom:2pt;">REKAP DATA ARSIP</p>
+    <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:900;color:#1A1860;line-height:1;">${meta.icon||''} ${meta.title||activeTab.toUpperCase()}</p>
+    <p style="font-family:Arial,sans-serif;font-size:9pt;color:#8B91A8;margin-top:2pt;">${meta.desc||''}</p>
+  </td>
+</tr></table>
+
+<!-- Main Table -->
+<table style="width:100%;border-collapse:collapse;">
+  <thead>
+    <tr>${thCells}</tr>
+  </thead>
+  <tbody>
+    ${dataRows}
+  </tbody>
+</table>
+
+<!-- Footer -->
+<table style="width:100%;border:none;margin-top:16pt;"><tr>
+  <td style="border:none;border-top:1px solid #D8DBE8;padding:6pt 0 0;font-family:Arial,sans-serif;font-size:7.5pt;color:#8B91A8;">
+    Dokumen ini digenerate secara otomatis oleh SIATRA — Sistem Informasi Arsip Tata Ruang Kabupaten Majene &nbsp;|&nbsp; Data tersinkronisasi dengan Google Drive
+  </td>
+  <td style="border:none;border-top:1px solid #D8DBE8;padding:6pt 0 0;text-align:right;font-family:Arial,sans-serif;font-size:7.5pt;color:#8B91A8;">
+    ${tgl} &nbsp;|&nbsp; ${arr.length} Data
+  </td>
+</tr></table>
+
+</body>
+</html>`;
+
+  const blob=new Blob(['\ufeff'+html],{type:'application/msword;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`Rekap_${(meta.title||activeTab).replace(/\s+/g,'_')}_Majene_${ds}.doc`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Export Word "${meta.title}" berhasil diunduh!`,'ok');
 }
 
 /* ══════════════════════════════ DELETE ══════════════════════════════════ */
