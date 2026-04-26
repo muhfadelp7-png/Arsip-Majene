@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SIATRA — Sistem Arsip Tata Ruang Majene</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// Apply dark mode immediately to prevent flash
+(function(){
+  const saved = localStorage.getItem('siatraDarkMode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(saved === 'true' || (saved === null && prefersDark)){
+    document.documentElement.setAttribute('data-theme','dark');
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════ RESET & ROOT ══════════════════════════════════════ */
@@ -60,6 +70,132 @@
   --radius:10px;
   --radius-lg:16px;
   --radius-xl:20px;
+}
+
+/* ══════════════════════ DARK MODE VARIABLES ══════════════════════════════ */
+[data-theme="dark"] {
+  --white:#1E2235;
+  --slate-50:#161829;
+  --slate-100:#1E2235;
+  --slate-200:#2A2F4A;
+  --slate-300:#3A4060;
+  --slate-400:#7B82A0;
+  --slate-500:#9CA3BF;
+  --slate-600:#B8BFDA;
+  --slate-700:#CDD5EB;
+  --slate-800:#E2E8F5;
+
+  --blue-lt:#1A1F40;
+  --blue-mid:#2D3575;
+
+  --gold-bg:#1E1B0A;
+  --gold-border:#4A3C00;
+  --warn-bg:#1A1200;
+  --warn-border:#4A3000;
+
+  --success-bg:#052019;
+  --success-border:#0A4A30;
+  --danger-bg:#1A0505;
+  --danger-border:#4A1515;
+
+  --sh-xs:0 1px 3px rgba(0,0,0,.3);
+  --sh-sm:0 2px 8px rgba(0,0,0,.4);
+  --sh-md:0 4px 16px rgba(0,0,0,.5);
+  --sh-lg:0 8px 32px rgba(0,0,0,.55);
+  --sh-xl:0 20px 60px rgba(0,0,0,.65);
+}
+
+/* Dark mode body background */
+[data-theme="dark"] body {
+  background: #13152A;
+  color: var(--slate-700);
+}
+
+/* Dark mode stats bar */
+[data-theme="dark"] .stats-bar {
+  background: var(--white);
+  border-color: var(--slate-200);
+}
+
+/* Dark mode table */
+[data-theme="dark"] tbody tr:nth-child(even) { background: #1A1D32; }
+[data-theme="dark"] tbody tr:hover { background: #1E2340 !important; }
+[data-theme="dark"] tbody td { border-color: var(--slate-200); color: var(--slate-700); }
+
+/* Dark mode input */
+[data-theme="dark"] input.inp,
+[data-theme="dark"] select.inp,
+[data-theme="dark"] .chat-inp,
+[data-theme="dark"] .gsearch-inp {
+  background: #1A1D32;
+  border-color: var(--slate-200);
+  color: var(--slate-800);
+}
+[data-theme="dark"] input.inp::placeholder,
+[data-theme="dark"] .chat-inp::placeholder { color: var(--slate-400); }
+
+/* Dark mode form & modal */
+[data-theme="dark"] .form-section { background: #1A1D32; border-color: var(--slate-200); }
+[data-theme="dark"] .form-section-head { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .mfooter { background: #1A1D32; border-color: var(--slate-200); }
+[data-theme="dark"] .modal { background: var(--white); border-color: var(--slate-200); }
+
+/* Dark mode setup card */
+[data-theme="dark"] .setup-card { background: #1A1D32; }
+[data-theme="dark"] .setup-intro { background: #1A1F40; border-color: var(--blue-mid); color: #A5B4FC; }
+[data-theme="dark"] .deploy-box { background: #1A1D32; border-color: var(--slate-200); }
+[data-theme="dark"] .url-row input { background: #1A1D32; border-color: var(--slate-200); color: var(--slate-800); }
+
+/* Dark mode filter/toolbar */
+[data-theme="dark"] .filter-wrap { background: #1A1D32; border-color: var(--slate-200); }
+[data-theme="dark"] input.fsel { color: var(--slate-700); }
+[data-theme="dark"] .toolbar { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .gsearch-input-wrap { background: #1A1D32; }
+[data-theme="dark"] .gsearch-close { background: #252845; color: var(--slate-500); }
+[data-theme="dark"] .gsearch-close:hover { background: #2E3260; color: var(--slate-800); }
+
+/* Dark mode buttons */
+[data-theme="dark"] .btn-secondary { background: #1A1D32; color: #A5B4FC; border-color: var(--slate-200); }
+[data-theme="dark"] .btn-secondary:hover { background: var(--blue-lt); border-color: var(--blue-mid); }
+[data-theme="dark"] .btn-cancel { background: #1A1D32; color: var(--slate-700); border-color: var(--slate-200); }
+[data-theme="dark"] .btn-cancel:hover { border-color: var(--slate-400); color: var(--slate-800); }
+[data-theme="dark"] .rbtn { background: #1A1D32; border-color: var(--slate-200); color: var(--slate-500); }
+
+/* Dark mode misc */
+[data-theme="dark"] .fchip { background: #252845; border-color: var(--slate-200); color: var(--slate-600); }
+[data-theme="dark"] .sect-div::before { background: var(--slate-200); }
+[data-theme="dark"] .sect-div span { background: var(--white); color: var(--slate-500); }
+[data-theme="dark"] .file-lbl { background: #1A1D32; border-color: var(--slate-300); color: var(--slate-500); }
+[data-theme="dark"] .file-icon-wrap { background: #252845; }
+[data-theme="dark"] .opt-badge { background: #252845; color: var(--slate-400); }
+[data-theme="dark"] .tab-nav { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .tab-btn:hover { background: #1A1D32; }
+[data-theme="dark"] .tab-active { background: var(--blue-lt) !important; }
+[data-theme="dark"] footer { border-color: var(--slate-200); }
+[data-theme="dark"] .chatbot-panel { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .chat-messages { background: #13152A; }
+[data-theme="dark"] .chat-bubble { background: #1E2235; border-color: var(--slate-200); color: var(--slate-700); }
+[data-theme="dark"] .chat-typing { background: #1E2235; border-color: var(--slate-200); }
+[data-theme="dark"] .chat-input-row { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .chat-suggest { background: #1A1F40; border-color: var(--blue-mid); color: #A5B4FC; }
+[data-theme="dark"] .table-card { background: var(--white); border-color: var(--slate-200); }
+[data-theme="dark"] .table-card-header { background: linear-gradient(135deg, #1A1D32, var(--white)); border-color: var(--slate-200); }
+
+/* Dark mode toggle button */
+.dark-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  cursor: pointer; font-size: 16px;
+  transition: all .2s; color: rgba(255,255,255,.7);
+  flex-shrink: 0;
+}
+.dark-toggle:hover {
+  background: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.3);
+  color: #fff;
+  transform: rotate(20deg);
 }
 
 /* ══════════════════════ SPLASH WELCOME SCREEN ════════════════════════════ */
@@ -1510,6 +1646,7 @@ function uploadFile(b){
           <div class="spinner" id="syncIco"></div>
           <span id="syncTxt">Memuat...</span>
         </div>
+        <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle Dark/Light Mode">🌙</button>
         <button class="cfg-btn" onclick="reconfigure()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Konfigurasi
@@ -2552,6 +2689,35 @@ Instruksi:
 
 /* ══════════════════ SHOW CHATBOT FAB AFTER APP LOADS ══════════════════ */
 function showChatFab(){document.getElementById('chatbotFab').classList.remove('hidden');}
+
+/* ══════════════════════════ DARK MODE ══════════════════════════════════ */
+function initDarkMode(){
+  const saved = localStorage.getItem('siatraDarkMode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved !== null ? saved === 'true' : prefersDark;
+  applyDarkMode(isDark, false);
+}
+
+function applyDarkMode(isDark, save=true){
+  if(isDark){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('darkToggle').textContent = '☀️';
+    document.getElementById('darkToggle').title = 'Mode Terang';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('darkToggle').textContent = '🌙';
+    document.getElementById('darkToggle').title = 'Mode Gelap';
+  }
+  if(save) localStorage.setItem('siatraDarkMode', isDark);
+}
+
+function toggleDarkMode(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyDarkMode(!isDark);
+}
+
+// Initialize dark mode on load
+document.addEventListener('DOMContentLoaded', initDarkMode);
 </script>
 </body>
 </html>
